@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>FMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+        }
+        /* Style for the active navigation link */
+        nav a.active {
+            color: #4f46e5; /* Tailwind indigo-600 */
+            font-weight: 600; /* semibold */
+            border-bottom: 2px solid #4f46e5;
+        }
+        /* Basic styling for a modal (can be improved) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 100; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+            max-width: 500px;
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Tailwind shadow-md */
+        }
+        .modal-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .modal-close:hover,
+        .modal-close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <header class="sticky top-0 z-50 bg-white shadow-md">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m4 10v-2m3 2v-6m3 2v4m4-15v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z" />
+</svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-lg font-bold text-gray-800">FMS</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <nav id="mainNav" class="flex space-x-1 sm:space-x-2 md:space-x-4 mr-2 sm:mr-4">
+                        <a href="index.html" class="nav-link px-2 py-1 text-sm sm:text-base text-gray-700 hover:text-indigo-600 font-medium rounded-md">Home</a>
+                        <a href="Account.html" class="nav-link px-2 py-1 text-sm sm:text-base text-gray-700 hover:text-indigo-600 font-medium rounded-md">Account</a>
+                        <a href="Billing.html" class="nav-link px-2 py-1 text-sm sm:text-base text-gray-700 hover:text-indigo-600 font-medium rounded-md">Billing</a>
+                        <a href="Hiring.html" class="nav-link px-2 py-1 text-sm sm:text-base text-gray-700 hover:text-indigo-600 font-medium rounded-md">Hiring</a>
+                        <a href="Onboarding.html" class="nav-link px-2 py-1 text-sm sm:text-base text-gray-700 hover:text-indigo-600 font-medium rounded-md">Onboarding</a>
+                        <a href="Offboarding.html" class="nav-link px-2 py-1 text-sm sm:text-base text-gray-700 hover:text-indigo-600 font-medium rounded-md">Offboarding</a>
+                        <a href="Salary.html" class="nav-link px-2 py-1 text-sm sm:text-base text-gray-700 hover:text-indigo-600 font-medium rounded-md">Salary</a>
+                    </nav>
+
+
+                    <div class="hidden sm:block">
+                        <p id="dateTimeDisplay" class="text-xs text-gray-500"></p>
+                    </div>
+                    <button id="syncButton" type="button" title="Sync Data" class="p-1.5 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                        <span class="sr-only">Sync Data</span>
+                        <svg class="h-5 w-5 sm:h-6 sm:w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                        </svg>
+                    </button>
+                    <button id="userProfileButton" type="button" title="User Profile" class="p-1.5 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                        <span class="sr-only">Open user menu</span>
+                        <svg class="h-5 w-5 sm:h-6 sm:w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content" class="container mx-auto px-4 sm:px-6 lg:px-8 py-16 flex flex-col items-center justify-center min-h-[60vh]">
+        <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch mb-10">
+            <!-- Left Column: Overview -->
+            <div class="relative bg-white/80 backdrop-blur rounded-2xl shadow-xl p-10 flex flex-col justify-between h-full text-center transition-all duration-300 hover:shadow-2xl group">
+                <div class="flex flex-col items-center mb-6">
+                    <!-- Removed the icon above the title -->
+                    <h1 class="text-4xl font-extrabold text-gray-900 mb-2 tracking-tight text-left">Flow Management System (FMS)</h1>
+                    <p class="text-lg text-gray-600 mb-2 text-left">A unified, modern platform for seamless facility and workforce management.</p>
+                </div>
+                <div class="flex flex-wrap justify-center gap-2 mb-4">
+                    <span class="inline-flex items-center bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-semibold shadow-sm transition-transform hover:scale-105">
+                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 20 20"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg> Trusted
+                    </span>
+                    <span class="inline-flex items-center bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-semibold shadow-sm transition-transform hover:scale-105">
+                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" /><path stroke-linecap="round" stroke-linejoin="round" d="M7 10l2 2 4-4" /></svg> Secure
+                    </span>
+                    <span class="inline-flex items-center bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold shadow-sm transition-transform hover:scale-105">
+                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 20 20"><rect x="4" y="4" width="12" height="12" rx="3" /></svg> All-in-one
+                    </span>
+                </div>
+                <p class="text-base text-gray-500 mb-6 text-left">From account management to payroll, FMS brings together all the essential modules for modern operations, ensuring transparency, compliance, and excellence.</p>
+                <div class="flex justify-center w-full">
+                  <button class="mt-2 px-4 py-2 bg-indigo-600 text-white rounded-full font-semibold shadow hover:bg-indigo-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 w-fit min-w-0" style="width:fit-content; min-width:0;">Learn More</button>
+                </div>
+                <section class="mt-10 text-left flex-1 flex flex-col justify-end">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <svg class="h-6 w-6 text-indigo-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20.5C6.753 20.5 2 15.747 2 10.5S6.753.5 12 .5s10 4.753 10 10-4.753 10-10 10z"/></svg>
+                        Why Choose FMS?
+                    </h2>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 shadow-sm">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v4a1 1 0 001 1h3m10-5v4a1 1 0 01-1 1h-3m-4 4v4a1 1 0 001 1h3m10-5v4a1 1 0 01-1 1h-3"/></svg>
+                            </span>
+                            <span class="text-gray-700"><span class="font-semibold">Unified platform</span> for all facility and HR operations</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 shadow-sm">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 7.165 6 9.388 6 12v2.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                            </span>
+                            <span class="text-gray-700"><span class="font-semibold">Modern, intuitive, and responsive</span> user interface</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-green-100 text-green-600 shadow-sm">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/></svg>
+                            </span>
+                            <span class="text-gray-700"><span class="font-semibold">Robust security</span> and compliance features</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-yellow-100 text-yellow-600 shadow-sm">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a4 4 0 014-4h4"/></svg>
+                            </span>
+                            <span class="text-gray-700"><span class="font-semibold">Customizable workflows</span> and reporting</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-purple-100 text-purple-600 shadow-sm">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2h5"/></svg>
+                            </span>
+                            <span class="text-gray-700"><span class="font-semibold">Scalable</span> for organizations of any size</span>
+                        </li>
+                    </ul>
+                </section>
+            </div>
+            <!-- Right Column: Key Modules -->
+            <div class="bg-white rounded-xl shadow-lg p-8 flex flex-col justify-between h-full">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Key Modules at a Glance</h2>
+                <ul class="space-y-5 text-gray-700 text-base flex-1 flex flex-col justify-between">
+                    <li class="flex items-start gap-3">
+                        <svg class="h-7 w-7 text-indigo-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" /></svg>
+                        <span><span class="font-semibold text-gray-900">Account Management:</span> Centralized control of user profiles, roles, and secure access. Simplifies onboarding and offboarding while maintaining compliance.</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="h-7 w-7 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a4 4 0 014-4h4" /></svg>
+                        <span><span class="font-semibold text-gray-900">Billing:</span> Automated invoice generation, payment tracking, and real-time financial dashboards for transparent billing operations.</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="h-7 w-7 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 9.75V6.75A2.25 2.25 0 0014.25 4.5h-4.5A2.25 2.25 0 007.5 6.75v3" /></svg>
+                        <span><span class="font-semibold text-gray-900">Hiring:</span> End-to-end recruitment management, from job postings to candidate selection, with analytics for smarter hiring decisions.</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="h-7 w-7 text-purple-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3z" /></svg>
+                        <span><span class="font-semibold text-gray-900">Onboarding:</span> Automated onboarding workflows, digital checklists, and progress tracking for a smooth new hire experience.</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="h-7 w-7 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7" /></svg>
+                        <span><span class="font-semibold text-gray-900">Offboarding:</span> Structured exit processes, knowledge transfer, and asset recovery to ensure secure and compliant offboarding.</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="h-7 w-7 text-yellow-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3z" /></svg>
+                        <span><span class="font-semibold text-gray-900">Salary Management:</span> Comprehensive payroll management, salary structure reviews, and bonus administration with detailed reporting.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <footer class="mt-16 w-full text-center text-gray-400 text-sm border-t pt-6 hidden">&copy; 2025 FMS. All rights reserved.</footer>
+    </main>
+
+    <div id="infoModal" class="modal">
+      <div class="modal-content">
+        <span class="modal-close" onclick="document.getElementById('infoModal').style.display='none'">&times;</span>
+        <p id="modalText">Some text in the Modal..</p>
+      </div>
+    </div>
+
+    <script>
+        // Function to update date and time
+        function updateDateTime() {
+            const now = new Date();
+            const formatted = now.toLocaleString('en-IN', {
+                weekday: 'short', year: 'numeric', month: 'short', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', hour12: true
+            });
+            const dateTimeDisplay = document.getElementById('dateTimeDisplay');
+            if (dateTimeDisplay) {
+                dateTimeDisplay.textContent = formatted;
+            }
+        }
+
+        // Remove SPA and nav logic since there are no nav items and the landing page is static
+
+        // Modal functionality (example)
+        const syncButton = document.getElementById('syncButton');
+        const userProfileButton = document.getElementById('userProfileButton');
+        const modal = document.getElementById('infoModal');
+        const modalText = document.getElementById('modalText');
+
+        if(syncButton) {
+            syncButton.addEventListener('click', () => {
+                if(modalText) modalText.textContent = "Data synchronization started...";
+                if(modal) modal.style.display = "block";
+                // Simulate sync
+                setTimeout(() => {
+                     if(modalText) modalText.textContent = "Data synchronized successfully!";
+                     setTimeout(() => { if(modal) modal.style.display = "none"; }, 2000);
+                }, 1500);
+            });
+        }
+
+        if(userProfileButton) {
+            userProfileButton.addEventListener('click', () => {
+                if(modalText) modalText.textContent = "User Profile: John Doe (Administrator)";
+                if(modal) modal.style.display = "block";
+            });
+        }
+        // Close modal if user clicks outside of it
+        window.onclick = function(event) {
+            if (event.target == modal && modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        // Initial page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDateTime();
+            setInterval(updateDateTime, 60000); // Update time every minute
+        });
+
+
+
+          // Highlight active navigation link
+  const currentPath = window.location.pathname.split("/").pop(); // e.g., "Billing.html"
+  const navLinks = document.querySelectorAll("#mainNav .nav-link");
+
+  navLinks.forEach(link => {
+    if (link.getAttribute("href") === currentPath) {
+      link.classList.add("text-indigo-600", "font-semibold");
+    } else {
+      link.classList.remove("text-indigo-600", "font-semibold");
+    }
+  });
+
+
+function updateDateTime() {
+        const dateTimeDisplay = document.getElementById('dateTimeDisplay');
+        if (dateTimeDisplay) {
+            const now = new Date();
+            const options = {
+                weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', hour12: true
+            };
+            dateTimeDisplay.textContent = now.toLocaleString('en-US', options);
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+    });   
+    </script>
+</body>
+</html>

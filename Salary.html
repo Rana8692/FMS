@@ -1,0 +1,2099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salary FMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        #entranceAnimationOverlaySalary {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        #entranceAnimationOverlaySalary.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid rgba(16, 185, 129, 0.3); /* Greenish for salary */
+            border-top-color: #10B981; /* Green-500 */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .loading-text {
+            margin-top: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #374151;
+            animation: fadeInOut 2s infinite ease-in-out;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes modalPopup {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .modal-content.modal-popup-active {
+            animation: modalPopup 0.4s ease-out forwards;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+        }
+        .modal-content-wrapper {
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 1rem;
+            border: 1px solid #d1d5db;
+            width: 90%;
+            max-width: 95vw;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            position: relative;
+            transform: scale(1);
+            opacity: 1;
+            max-height: calc(90vh - 1rem);
+            overflow-y: auto;
+        }
+
+        @media (min-width: 500px) {
+            .modal-content {
+                width: 75vw;
+            }
+        }
+
+        #addEntrySectionModalSalary .modal-content,
+        #howToApplyModalSalaryFMS .modal-content, /* Renamed ID */
+        #doerInfoModalSalaryFMS .modal-content,
+        #stageActionModalSalaryFMS .modal-content,
+        #googleFormActionModalSalaryFMS .modal-content,
+        #backendLoginModalSalaryFMS .modal-content {
+            max-width: 850px;
+        }
+        #entryDetailsModalSalaryFMS .modal-content {
+            max-width: 1000px;
+        }
+        #messageAlertModalSalaryFMS .modal-content,
+        #stageActionModalSalaryFMS .modal-content,
+        #backendLoginModalSalaryFMS .modal-content {
+            width: auto;
+            max-width: 550px;
+        }
+         #googleFormActionModalSalaryFMS .modal-content {
+             padding: 5px;
+        }
+        #backendLoginModalSalaryFMS .modal-content {
+            max-width: 400px;
+        }
+
+
+        @media (min-width: 640px) {
+            .modal-content {
+                padding: 1.5rem;
+                max-height: calc(90vh - 3rem);
+            }
+            #messageAlertModalSalaryFMS .modal-content,
+            #stageActionModalSalaryFMS .modal-content,
+            #backendLoginModalSalaryFMS .modal-content {
+                padding: 1.5rem;
+            }
+        }
+        @media (min-width: 768px) {
+             .modal-content {
+                padding: 25px;
+            }
+        }
+
+
+        #addEntrySectionModalSalary .modal-content {
+             padding: 5px;
+        }
+        #googleFormIframeSalaryFMS, #googleFormActionIframeSalaryFMS {
+            width: 100%;
+            height: calc(85vh - 70px);
+            border: none;
+        }
+
+        .close-button {
+            color: #6b7280; position: absolute; top: 0.5rem; right: 0.75rem;
+            font-size: 1.875rem; font-weight: bold; transition: color 0.2s;
+            line-height: 1;
+            z-index: 10;
+            padding: 0.25rem;
+        }
+         @media (min-width: 640px) {
+            .close-button {
+                top: 10px; right: 15px;
+            }
+        }
+        #addEntrySectionModalSalary .close-button,
+        #googleFormActionModalSalaryFMS .close-button {
+            top: 8px; right: 10px;
+            font-size: 1.5rem;
+            background-color: rgba(255,255,255,0.7);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        .modal-controls-group {
+            position: absolute;
+            top: 0.5rem; right: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            z-index: 10;
+        }
+        @media (min-width: 640px) {
+            .modal-controls-group {
+                top: 12px; right: 15px;
+                gap: 6px;
+            }
+        }
+
+        .modal-control-button {
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            cursor: pointer;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+        }
+        .modal-control-button svg {
+            width: 1rem;
+            height: 1rem;
+            display: block;
+        }
+        .modal-control-button.close-btn svg { fill: #9ca3af; }
+        .modal-control-button.close-btn:hover svg { fill: #374151; }
+        .modal-control-button:hover { background-color: #e5e7eb; }
+        .modal-control-button.sync-btn svg { fill: #9ca3af; }
+        .modal-control-button.sync-btn:hover svg { fill: #10B981; } /* Green to match theme */
+
+
+        .table-container::-webkit-scrollbar { width: 8px; height: 8px; }
+        .table-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .table-container::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+        .table-container::-webkit-scrollbar-thumb:hover { background: #555; }
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.375rem; font-weight: 500;
+            transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, transform 0.1s ease;
+            cursor: pointer; text-align: center; display: inline-flex;
+            align-items: center; justify-content: center;
+            min-height: 44px;
+        }
+        @media (min-width: 640px) {
+            .btn {
+                padding: 0.75rem 1.5rem;
+            }
+        }
+        .btn svg { margin-right: 0.5rem; margin-left: -0.25rem; }
+        .btn-icon-only svg { margin-right: 0; margin-left: 0; }
+        .btn:active { transform: translateY(1px); }
+        .btn-primary { background-color: #10B981; color: white; } /* Green theme */
+        .btn-primary:hover { background-color: #059669; box-shadow: 0 4px 14px 0 rgba(16,185,129,0.39); }
+        .btn-secondary { background-color: #e5e7eb; color: #374151; }
+        .btn-secondary:hover { background-color: #d1d5db; }
+        .btn-success { background-color: #10b981; color: white; }
+        .btn-success:hover { background-color: #059669; }
+        .btn-warning { background-color: #f59e0b; color: white; }
+        .btn-warning:hover { background-color: #d97706; }
+        .btn-info { background-color: #3b82f6; color: white; }
+        .btn-info:hover { background-color: #2563eb; }
+        .btn-danger { background-color: #dc2626; color: white; }
+        .btn-danger:hover { background-color: #b91c1c; }
+
+        .form-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 1rem; }
+        @media (min-width: 768px) {
+            .form-grid { grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+            .form-grid .col-span-2 { grid-column: span 2 / span 2; }
+        }
+
+        .delay-ontime { color: #10b981; font-weight: 500; }
+        .delay-late { color: #dc2626; font-weight: 500; }
+        .delay-early { color: #3b82f6; font-weight: 500; }
+        .overdue-task { color: #dc2626; font-weight: bold; }
+
+        #entryDetailsModalSalaryFMS .crm-card { background: #fff; }
+        #entryDetailsModalSalaryFMS .crm-card h2 { margin-bottom: 1rem; font-size: 1.125rem; sm:font-size: 1.25rem; color: #2c3e50; font-weight: 600; }
+        #entryDetailsModalSalaryFMS .crm-section { flex: 1 1 100%; sm:flex: 1 1 300px; border-radius: 8px; border: 1px solid #e0e0e0; background-color: var(--section-bg, rgba(200,200,200,0.1)); font-size: 0.8rem; sm:font-size: 13px; min-width: 280px; }
+        #entryDetailsModalSalaryFMS .crm-section-header { padding: 0.5rem 0.75rem; sm:padding: 8px 12px; font-weight: 700; font-size: 0.875rem; sm:font-size: 14px; display: flex; align-items: center; gap: 0.5rem; sm:gap: 8px; color: white; background-color: var(--section-color, #777); border-top-left-radius: 7px; border-top-right-radius: 7px;}
+        #entryDetailsModalSalaryFMS .crm-section-header svg { width: 0.875rem; height: 0.875rem; sm:width: 16px; sm:height: 16px; fill: white;}
+        #entryDetailsModalSalaryFMS .crm-section-content { padding: 0.625rem 0.75rem; sm:padding: 10px 12px; border-bottom-left-radius: 7px; border-bottom-right-radius: 7px;}
+        #entryDetailsModalSalaryFMS .crm-description-item { margin-bottom: 0.5rem; }
+        #entryDetailsModalSalaryFMS .crm-description-item:last-child { margin-bottom: 0; }
+        #entryDetailsModalSalaryFMS .crm-label { font-weight: 600; color: #555; font-size: 0.75rem; sm:font-size: 0.8rem; margin-bottom: 2px;}
+        #entryDetailsModalSalaryFMS .crm-value { font-size: 0.8rem; sm:font-size: 0.9rem; color: #222; word-break: break-word;}
+
+        .details-section { background-color: #f9fafb; padding: 0.75rem; border-radius: 0.375rem; margin-bottom: 1.25rem; border: 1px solid #e5e7eb;}
+        .details-section h3 { font-size: 1rem; sm:font-size: 1.125rem; font-weight: 600; color: #059669; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 2px solid #10B981; } /* Green theme */
+        .timeline-step { padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; margin-bottom: 0.75rem; background-color: #fff;}
+        .timeline-step strong { color: #047857; font-size: 0.9rem; sm:font-size: 1rem; display: block; margin-bottom: 0.25rem;} /* Darker Green */
+        .timeline-details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); sm:grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;}
+        .timeline-details-grid .details-item { padding: 0.1rem 0; margin-bottom: 0.1rem;}
+        .timeline-details-grid .details-label { font-size: 0.75rem; sm:font-size: 0.8rem; }
+        .timeline-details-grid .details-value { font-size: 0.8rem; sm:font-size: 0.85rem; }
+        .timeline-step .btn-take-action { margin-top: 0.75rem; padding: 0.375rem 0.75rem; font-size: 0.875rem; }
+        .timeline-step .action-button-group { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; }
+
+        .scorecard-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); sm:grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.5rem; sm:gap: 1rem; margin-bottom: 1.5rem; sm:margin-bottom: 2rem;}
+        .scorecard { background-color: white; padding: 1rem; sm:padding: 1.25rem; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); text-align: center;}
+        .scorecard-title { font-size: 0.75rem; sm:font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem; sm:margin-bottom: 0.5rem; font-weight: 500; }
+        .scorecard-value { font-size: 1.875rem; sm:font-size: 2.25rem; font-weight: 700; color: #1f2937; }
+
+        /* Salary FMS Scorecard Colors */
+        .scorecard.total-pending .scorecard-value { color: #f59e0b; } /* Amber */
+        .scorecard.pending-md-approval .scorecard-value { color: #ef4444; } /* Red */
+        .scorecard.pending-accounts-sheet .scorecard-value { color: #3b82f6; } /* Blue */
+        .scorecard.pending-salary-proceed .scorecard-value { color: #a855f7; } /* Purple */
+        .scorecard.total-processed .scorecard-value { color: #10b981; } /* Green */
+
+
+        .status-badge {
+            padding: 0.25em 0.6em;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            sm:font-size: 0.75rem;
+            font-weight: 500;
+            text-align: center;
+            display: inline-block;
+            min-width: 100px;
+            sm:min-width: 120px;
+            color: white;
+        }
+        /* Salary FMS Status Badge Colors */
+        .status-pending-md-approval { background-color: #f87171; color: #7f1d1d; } /* Red */
+        .status-pending-accounts-sheet { background-color: #60a5fa; color: #1e3a8a; } /* Blue */
+        .status-pending-salary-proceed { background-color: #c084fc; color: #581c87; } /* Purple */
+        .status-salary-processed { background-color: #34d399; color: #065f46; } /* Green */
+        .status-default { background-color: #9ca3af; color: white; } /* Gray for default/unknown */
+
+
+        .rotate-animate {
+            animation: rotateIcon 1s linear;
+        }
+        @keyframes rotateIcon {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .main-content-area {
+            flex-grow: 1;
+            padding: 0.75rem;
+        }
+         @media (min-width: 640px) {
+            .main-content-area {
+                padding: 1.5rem;
+            }
+        }
+        @media (min-width: 768px) {
+            .main-content-area {
+                padding: 2rem;
+            }
+        }
+
+
+        @media screen and (max-width: 768px) {
+            .responsive-table thead { display: none; }
+            .responsive-table tr { display: block; margin-bottom: 0.625em; border-radius: 0.375rem; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06); border: 1px solid #e5e7eb;}
+            .responsive-table td {
+                display: block; text-align: right; font-size: 0.75rem;
+                border-bottom: 1px solid #e5e7eb; padding: 0.4rem 0.6rem !important;
+                padding-left: 42% !important;
+                position: relative;
+            }
+            .responsive-table td::before {
+                content: attr(data-label); position: absolute; left: 0.4rem;
+                width: 38%;
+                padding-right: 0.4rem;
+                white-space: nowrap; text-align: left; font-weight: 600; color: #4b5563;
+            }
+            .responsive-table td:last-child { border-bottom: 0; }
+            .responsive-table.doer-info-table td { padding-left: 30% !important; }
+            .responsive-table.doer-info-table td::before { width: 25%; }
+            .main-action-buttons button { width: 100%; margin-bottom: 0.5rem;}
+        }
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .filter-item {
+            flex-grow: 1;
+            min-width: 150px;
+        }
+         @media (min-width: 1024px) {
+            .filter-container {
+                flex-wrap: nowrap;
+            }
+            #searchInputContainerSalaryFMS {
+                flex-shrink: 0;
+                width: auto;
+            }
+            #filterControlsContainerSalaryFMS {
+                 flex-grow: 1;
+                 display: flex;
+                 flex-wrap: wrap;
+                 gap: 0.5rem;
+                 justify-content: flex-end;
+            }
+        }
+
+        /* Mobile Restriction Styles */
+        #mobileRestrictionOverlaySalary {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f3f4f6;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000; /* Ensure it's on top of everything */
+            text-align: center;
+            padding: 2rem;
+        }
+        #mobileRestrictionOverlaySalary .icon {
+            font-size: 4rem;
+            color: #10B981; /* Green theme */
+            margin-bottom: 1.5rem;
+        }
+        #mobileRestrictionOverlaySalary .message {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        #mobileRestrictionOverlaySalary .sub-message {
+            font-size: 1rem;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <header class="sticky top-0 z-50 bg-white shadow-md">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <svg class="h-8 w-8 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5S21 4.5 21 6v9m.75-6H3.75m15-3.75H3.75M3 12h18M3 15h18" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-lg font-bold text-gray-800">Hiring FMS</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <nav id="mainNav" class="flex space-x-1 sm:space-x-2 md:space-x-4 mr-2 sm:mr-4">
+                    <a href="index.html" class="nav-link px-2 py-1 text-sm sm:text-base text-gray-700 hover:text-indigo-600 font-medium rounded-md">Home</a>
+                    <a href="Account.html" class="nav-link px-2 py-1 text-sm sm:text-base text-gray-700 hover:text-indigo-600 font-medium rounded-md">Account</a>
+                    <a href="Billing.html" class="nav-link px-2 py-1 text-sm sm:text-base text-gray-700 hover:text-indigo-600 font-medium rounded-md">Billing</a>
+                    <a href="Hiring.html" class="nav-link px-2 py-1 text-sm sm:text-base text-gray-700 hover:text-indigo-600 font-medium rounded-md">Hiring</a>
+                    <a href="Onboarding.html" class="nav-link px-2 py-1 text-sm sm:text-base text-gray-700 hover:text-indigo-600 font-medium rounded-md">Onboarding</a>
+                    <a href="Offboarding.html" class="nav-link px-2 py-1 text-sm sm:text-base text-gray-700 hover:text-indigo-600 font-medium rounded-md">Offboarding</a>
+                    <a href="Salary.html" class="nav-link px-2 py-1 text-sm sm:text-base text-gray-700 hover:text-indigo-600 font-medium rounded-md">Salary</a>
+                </nav>
+                <div class="hidden sm:block">
+                    <p id="dateTimeDisplay" class="text-xs text-gray-500"></p>
+                </div>
+                <button id="syncButton" type="button" title="Sync Data" class="p-1.5 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    <span class="sr-only">Sync Data</span>
+                    <svg class="h-5 w-5 sm:h-6 sm:w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                </button>
+                <button id="userProfileButton" type="button" title="User Profile" class="p-1.5 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    <span class="sr-only">Open user menu</span>
+                    <svg class="h-5 w-5 sm:h-6 sm:w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="mobileRestrictionOverlaySalary">
+        <div class="icon">🖥️</div>
+        <div class="message">Desktop View Recommended</div>
+        <div class="sub-message">Please open this Salary FMS on a desktop browser for the best experience.</div>
+    </div>
+
+    <div id="fmsMainContainerSalary"> <div id="entranceAnimationOverlaySalary">
+            <div class="spinner"></div>
+            <p class="loading-text">Loading Salary FMS...</p>
+        </div>
+
+        <div class="main-content-area container mx-auto max-w-7xl bg-white rounded-lg shadow-xl mt-4">
+            <div class="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:flex-wrap justify-end gap-2 main-action-buttons">
+                <button id="openDoerInfoModalButtonSalaryFMS" class="btn btn-secondary text-sm w-full sm:w-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
+                        <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+                    </svg>
+                    Responsibilities
+                </button>
+                <button id="openBackendDataButtonSalaryFMS" class="btn btn-secondary text-sm w-full sm:w-auto">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-database-fill-gear" viewBox="0 0 16 16">
+                        <path d="M8 1c-1.573 0-3.022.289-4.096.777C2.875 2.245 2 2.993 2 4s.875 1.755 1.904 2.223C4.978 6.711 6.427 7 8 7s3.022-.289 4.096-.777C13.125 5.755 14 5.007 14 4s-.875-1.755-1.904-2.223C11.022 1.289 9.573 1 8 1"/>
+                        <path d="M2 7v-.839c.457.432 1.004.751 1.49.972C4.722 7.693 6.318 8 8 8s3.278-.307 4.51-.867c.486-.22 1.033-.54 1.49-.972V7c0 .021-.001.043-.003.064C13.486 7.153 12.006 7.5 8 7.5s-5.486-.347-6.997-.436A1.02 1.02 0 0 1 2 7m-1 7v-1c0-.021.001-.043.003-.064C1.514 12.847 2.994 12.5 6 12.5s4.486.347 5.997.436c.002.02.003.043.003.064v1a1.02 1.02 0 0 1-.003.064C11.486 13.153 10.006 13.5 7 13.5s-4.486-.347-5.997-.436A1.02 1.02 0 0 1 1 14m10.887-1.754C10.51 12.089 9.36 12 8 12s-2.51.089-3.887.246a.5.5 0 0 0-.113.034V10.5a.5.5 0 0 1 .113-.034C5.49 10.32 6.64 10.25 8 10.25s2.51.07 3.887.216a.5.5 0 0 1 .113.034v1.716a.5.5 0 0 0-.113-.034M15.777 11.1l-.82-.072A1.8 1.8 0 0 0 14.19 11H14v-.11c0-.081-.001-.16-.004-.238c-.103-.64-.393-1.22-.788-1.73A2.99 2.99 0 0 0 11.437 8c-.152.243-.29.505-.412.786A2.99 2.99 0 0 0 12.563 8c.152.243.29.505.412.786a2.99 2.99 0 0 0 1.025.974c.003.078.004.157.004.238V11h-.191c-.391-.03-.755-.166-1.058-.28A1.8 1.8 0 0 0 11.4 11.1l-.82.072a.5.5 0 1 0 .036.993l.82-.072c.14-.012.274-.003.393.047a.5.5 0 0 0 .253.286l.708.404a.5.5 0 0 0 .596-.044l.708-.404a.5.5 0 0 0 .253-.286c.118-.05.253-.059.393-.047l.82.072a.5.5 0 1 0 .036-.993zM8 16a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
+                    </svg>
+                    Backend Data
+                </button>
+                <button id="openHowToApplyModalButtonSalaryFMS" class="btn btn-secondary text-sm w-full sm:w-auto"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                    </svg>
+                    How to Apply
+                </button>
+                <button id="openEntryFormModalButtonSalary" class="btn btn-primary text-sm w-full sm:w-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cash-coin" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M11 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8m5-4a5 5 0 1 1-10 0 5 5 0 0 1 10 0"/>
+                        <path d="M9.438 11.944c.047.596.518 1.06 1.062 1.06h1.062c.596 0 1.062-.518 1.062-1.062V7.938c0-.596-.518-1.062-1.062-1.062h-1.062c-.596 0-1.062.518-1.062 1.062V11.944zM11 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
+                        <path d="M1.375 7.028a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h.191l-.486.485a.5.5 0 1 0 .707.707l.486-.485h.928a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1.618zm1.06 1h.658v.406H2.436z"/>
+                        <path d="M4.998 7.028a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h.191l-.486.485a.5.5 0 1 0 .707.707l.486-.485h.928a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM6.06 8.028h.658v.406H6.06z"/>
+                        <path d="M8.562 7.028a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h.191l-.486.485a.5.5 0 0 0 .707.707l.486-.485h.928a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1.618zm1.06 1h.658v.406H9.622z"/>
+                    </svg>
+                    Initiate Salary Process
+                </button>
+            </div>
+
+            <section id="scorecardSectionSalaryFMS" class="mb-6 sm:mb-8">
+                <h2 class="text-xl sm:text-2xl font-semibold text-gray-700 mb-3 sm:mb-4">Salary Processing Overview</h2>
+                <div class="scorecard-container">
+                    <div class="scorecard total-pending"> <div class="scorecard-title">Total Pending Processes</div>
+                        <div class="scorecard-value" id="scorecardTotalPendingSalary">0</div>
+                    </div>
+                    <div class="scorecard pending-md-approval"> <div class="scorecard-title">Pending MD Approval</div>
+                        <div class="scorecard-value" id="scorecardPendingMDApproval">0</div>
+                    </div>
+                    <div class="scorecard pending-accounts-sheet"> <div class="scorecard-title">Pending Sheet to Accounts</div>
+                        <div class="scorecard-value" id="scorecardPendingAccountsSheet">0</div>
+                    </div>
+                    <div class="scorecard pending-salary-proceed"> <div class="scorecard-title">Pending Salary Proceed</div>
+                        <div class="scorecard-value" id="scorecardPendingSalaryProceed">0</div>
+                    </div>
+                    <div class="scorecard total-processed"> <div class="scorecard-title">Total Processed</div>
+                        <div class="scorecard-value" id="scorecardTotalProcessedSalary">0</div>
+                    </div>
+                </div>
+            </section>
+
+
+            <div id="addEntrySectionModalSalary" class="modal"><div class="modal-content-wrapper">
+                <section class="modal-content bg-gray-50">
+                    <span id="closeEntryFormModalButtonSalary" class="close-button">&times;</span>
+                    <h2 class="text-xl sm:text-2xl font-semibold text-gray-700 mb-2 text-center">Initiate New Salary Process</h2>
+                    <p class="text-xs sm:text-sm text-gray-500 text-center mb-3 sm:mb-4">Please submit new salary process entries using the designated Google Form.</p>
+                    <iframe id="googleFormIframeSalaryFMS"
+                            src="YOUR_SALARY_PROCESS_GOOGLE_FORM_URL_HERE"
+                            frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+                </section>
+            </div></div>
+
+            <div id="doerInfoModalSalaryFMS" class="modal"><div class="modal-content-wrapper">
+                <section class="modal-content bg-white">
+                    <span id="closeDoerInfoModalButtonSalaryFMS" class="close-button">&times;</span>
+                    <h1 class="text-xl sm:text-2xl font-bold text-green-600 mb-4 sm:mb-6">Salary FMS: Process Responsibilities</h1>
+                    <div class="space-y-4 sm:space-y-6 text-gray-700 text-xs sm:text-sm leading-relaxed">
+                        <div class="bg-gray-50 p-3 sm:p-4 rounded-md shadow">
+                            <h2 class="text-md sm:text-lg font-semibold text-green-500 mb-2 flex items-center">
+                                <svg class="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mr-2 sm:mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                                Initiate Salary Process Entry
+                            </h2>
+                            <ul class="list-disc list-inside ml-6 sm:ml-10 space-y-1">
+                                <li><strong>Who:</strong> HR / Accounts Admin</li>
+                                <li><strong>How:</strong> Click on "Initiate Salary Process" button (opens Google Form - ensure URL is correct in the code)</li>
+                                <li><strong>When:</strong> Typically at the start of the salary processing cycle for a given month.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 sm:p-4 rounded-md shadow">
+                            <h2 class="text-md sm:text-lg font-semibold text-green-500 mb-2 flex items-center">
+                                <svg class="h-5 w-5 sm:h-6 sm:w-6 text-red-500 mr-2 sm:mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                Stage 1: Take Approvals from MD
+                            </h2>
+                            <ul class="list-disc list-inside ml-6 sm:ml-10 space-y-1">
+                                <li><strong>Who:</strong> Accounts Head / Finance Manager</li>
+                                <li><strong>How:</strong> Present salary sheet/summary to MD for approval. Update FMS via "Take Action".</li>
+                                <li><strong>When:</strong> As per defined TAT after salary data compilation.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 sm:p-4 rounded-md shadow">
+                            <h2 class="text-md sm:text-lg font-semibold text-green-500 mb-2 flex items-center">
+                               <svg class="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mr-2 sm:mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25V16.5a3.75 3.75 0 01-3.75 3.75H5.25A3.75 3.75 0 011.5 16.5v-3.75m18 0V9.75A2.25 2.25 0 0017.25 7.5H4.75A2.25 2.25 0 002.5 9.75v4.5M19.5 14.25H18a2.25 2.25 0 00-2.25-2.25H8.25A2.25 2.25 0 006 14.25H4.5m15 0h.008v.008H19.5v-.008zm-3.75 0h.008v.008h-.008v-.008zm-3.75 0h.008v.008h-.008v-.008z" /></svg>
+                                Stage 2: Salary Sheet given to Accounts
+                            </h2>
+                            <ul class="list-disc list-inside ml-6 sm:ml-10 space-y-1">
+                                <li><strong>Who:</strong> HR / Approving Authority</li>
+                                <li><strong>How:</strong> Provide the approved salary sheet to the accounts department for processing. Update FMS.</li>
+                                <li><strong>When:</strong> Immediately after MD approval.</li>
+                            </ul>
+                        </div>
+                         <div class="bg-gray-50 p-3 sm:p-4 rounded-md shadow">
+                            <h2 class="text-md sm:text-lg font-semibold text-green-500 mb-2 flex items-center">
+                                <svg class="h-5 w-5 sm:h-6 sm:w-6 text-purple-500 mr-2 sm:mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg>
+                                Stage 3: Salary Proceed
+                            </h2>
+                            <ul class="list-disc list-inside ml-6 sm:ml-10 space-y-1">
+                                <li><strong>Who:</strong> Accounts Department</li>
+                                <li><strong>How:</strong> Process salary payments (bank transfers, etc.). Update FMS.</li>
+                                <li><strong>When:</strong> On or before the scheduled salary disbursement date.</li>
+                            </ul>
+                        </div>
+                    </div>
+                     <div class="mt-6 sm:mt-8 text-right">
+                        <button type="button" id="okDoerInfoModalButtonSalaryFMS" class="btn btn-primary">OK</button>
+                    </div>
+                </section>
+            </div></div>
+
+            <div id="entryDetailsModalSalaryFMS" class="modal"><div class="modal-content-wrapper">
+                <section class="modal-content bg-white">
+                    <h2 class="text-xl sm:text-2xl font-semibold text-gray-700 mb-1 mt-6 sm:mt-8" id="detailsModalTitleSalaryFMS">Salary Process Details</h2>
+                    <p class="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6" id="detailsModalSubtitleSalaryFMS"></p>
+                    <div id="detailsModalContentSalaryFMS"></div>
+                </section>
+            </div></div>
+
+            <div id="howToApplyModalSalaryFMS" class="modal" role="dialog" aria-modal="true" aria-labelledby="howToApplyModalSalaryFMSTitle"> <div class="modal-content-wrapper">
+                    <section class="modal-content bg-white">
+                        <span id="closeHowToApplyModalButtonSalaryFMS" class="close-button" aria-label="Close how to apply guide">&times;</span> <h1 id="howToApplyModalSalaryFMSTitle" class="text-xl sm:text-2xl font-bold text-green-600 mb-4">How to Use This FMS for Salary Processing</h1> <div class="space-y-3 sm:space-y-4 text-gray-700 text-xs sm:text-sm leading-relaxed">
+                            <p>Welcome to the <strong>Salary FMS</strong>. This system helps streamline and track the monthly salary processing workflow.</p>
+                            
+                            <div>
+                                <h2 class="text-md sm:text-lg font-semibold text-green-500 mt-3 mb-1 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-file-earmark-plus-fill mr-2 text-green-500" viewBox="0 0 16 16">
+                                        <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M8.5 7v1.5H10a.5.5 0 0 1 0 1H8.5V11a.5.5 0 0 1-1 0V9.5H6a.5.5 0 0 1 0-1h1.5V7a.5.5 0 0 1 1 0"/>
+                                    </svg>
+                                    1. Initiating a Salary Process
+                                </h2>
+                                <ul class="list-disc list-inside ml-8 space-y-1">
+                                    <li>Click the <strong class="text-green-600">"Initiate Salary Process"</strong> button located at the top right of the main dashboard.</li>
+                                    <li>This will open the designated Google Form for starting a new salary cycle (e.g., for a specific month and year).</li>
+                                    <li>Fill in all required details in the Google Form such as "Salary for the Month", "Year", and any "Remarks", then submit the form.</li>
+                                    <li>After submission, new entries will appear in the FMS table. You might need to click the <strong>🔄 Sync icon</strong> in the header to refresh the data.</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h2 class="text-md sm:text-lg font-semibold text-green-500 mt-3 mb-1 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-layout-text-window-reverse mr-2 text-green-500" viewBox="0 0 16 16">
+                                        <path d="M13 6.5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 .5-.5m0 3a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 .5-.5m.5 2.5a.5.5 0 0 1-.5.5h-5a.5.5 0 0 1 0-1h5a.5.5 0 0 1 .5.5"/>
+                                        <path d="M16 4.5V14a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h9.5L16 4.5zm-3 .5V14a1 1 0 0 0 1 1H2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V5z"/>
+                                    </svg>
+                                    2. Viewing and Managing Entries
+                                </h2>
+                                <ul class="list-disc list-inside ml-8 space-y-1">
+                                    <li>The main dashboard displays scorecards summarizing key metrics like total pending processes, items pending at each stage, and total processed salaries.</li>
+                                    <li>All salary process entries are listed in the main table.</li>
+                                    <li>Use the <strong>search bar</strong> to quickly find specific entries (e.g., by UID, Salary Month, Year).</li>
+                                    <li>Utilize the <strong>filters</strong> to narrow down the list by Overall Status, Month-Year, or Action Status (Overdue/Upcoming).</li>
+                                    <li>Click the <span class="inline-flex items-center justify-center h-5 w-5 bg-blue-100 text-blue-600 rounded-full align-middle">👁️</span> icon in the "Actions" column for any entry to view its detailed information and to process the salary stages.</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h2 class="text-md sm:text-lg font-semibold text-green-500 mt-3 mb-1 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-list-check mr-2 text-green-500" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708L2 11.293l1.146-1.147a.5.5 0 0 1 .708 0"/>
+                                    </svg>
+                                    3. Processing Through Salary Stages
+                                </h2>
+                                <p class="ml-8 mb-2">When you open an entry's details (using the 👁️ icon), you'll find the "Salary Stage Processing" section. This outlines each step. For the current pending stage, a "Take Action" button will be available.</p>
+                                <ul class="list-disc list-inside ml-8 space-y-2">
+                                    <li>
+                                        <strong>General Action Mechanism:</strong>
+                                        <ul class="list-circle list-inside ml-5 space-y-1">
+                                            <li>If the `Take Action (...)` field for a stage (defined in your backend Google Sheet) contains a Google Form URL, clicking the corresponding "Take Action" button in the FMS will open that Google Form in a modal. After submitting the form and closing the modal, the FMS will attempt to sync data.</li>
+                                            <li>If the `Take Action (...)` field is empty or has plain text instructions, clicking the button opens a confirmation modal. Review instructions, then click "Mark Complete" (or a stage-specific button text) to record the actual completion time for that stage.</li>
+                                            <li>Per-stage details like "Status" (e.g., "Take Approvals from MD Status") and "Comments" are expected to be updated via the linked Google Form or directly in the backend sheet if no form is used for that specific action.</li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <strong>Stage 1: Take Approvals from MD</strong>
+                                        <ul class="list-circle list-inside ml-5 space-y-1">
+                                            <li><strong>Purpose:</strong> Obtain necessary management approval for the compiled salary figures.</li>
+                                            <li><strong>Action in FMS:</strong> After MD approval is secured, click the "Mark MD Approval Done" button in the entry's details view. This records the actual completion time.</li>
+                                            <li><strong>Backend Update:</strong> Ensure "Take Approvals from MD Status" and "Take Approvals from MD Comments" fields are updated in your Google Sheet (either manually or via a linked form if you set one up for this action).</li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <strong>Stage 2: Salary Sheet given to Accounts</strong>
+                                        <ul class="list-circle list-inside ml-5 space-y-1">
+                                            <li><strong>Purpose:</strong> Formally provide the MD-approved salary sheet to the Accounts department for payment processing.</li>
+                                            <li><strong>Action in FMS:</strong> Once the sheet is handed over, click "Mark Sheet Given".</li>
+                                            <li><strong>Backend Update:</strong> Update "Salary Sheet given to Accounts Status" and "Comments" in the backend.</li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <strong>Stage 3: Salary Proceed</strong>
+                                        <ul class="list-circle list-inside ml-5 space-y-1">
+                                            <li><strong>Purpose:</strong> Confirm that the Accounts department has processed and disbursed the salaries.</li>
+                                            <li><strong>Action in FMS:</strong> After salary disbursement is confirmed, click "Mark Salary Processed".</li>
+                                            <li><strong>Backend Update:</strong> Update "Salary Proceed Status" and "Comments". This completes the salary cycle for the entry in the FMS.</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                                <p class="ml-8 mt-2">The FMS automatically updates the entry's overall status based on completed stages. Planned dates for subsequent steps are also set automatically. Use the 🔄 icon in the details modal to refresh individual entry data if needed.</p>
+                            </div>
+
+                            <div>
+                                <h2 class="text-md sm:text-lg font-semibold text-green-500 mt-3 mb-1 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-person-check-fill mr-2 text-green-500" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                    </svg>
+                                    4. Task Responsibilities
+                                </h2>
+                                <ul class="list-disc list-inside ml-8 space-y-1">
+                                    <li>Click the <strong>“Responsibilities”</strong> button (top right) to view general guidelines on which department or role is typically responsible for each stage of the salary process.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h2 class="text-md sm:text-lg font-semibold text-green-500 mt-3 mb-1 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-database-lock mr-2 text-green-500" viewBox="0 0 16 16">
+                                        <path d="M11.5 11.027C11.036 10.037 10.005 10 8.5 10s-2.536.037-3 .973V11h6zM13 6v-.111c.39.13.736.318.984.55C14.57 6.806 15 7.338 15 8s-.43 1.194-.984 1.562A2.6 2.6 0 0 1 13 10v1.027a4.5 4.5 0 0 0 1.84-1.003C15.562 9.48 16 8.802 16 8s-.438-1.48-.965-2.024A4.5 4.5 0 0 0 13 4.973V4a2 2 0 1 0-4 0v.973a4.5 4.5 0 0 0-1.035 1.003C7.438 6.52 7 7.198 7 8s.438 1.48.965 2.024A4.5 4.5 0 0 0 9 11.027V12H2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2z"/>
+                                        <path d="M2 3v1h11V3zM2 7v1h7V7zm0 4v1h7V11z"/>
+                                    </svg>
+                                    5. Accessing Backend Data
+                                </h2>
+                                <ul class="list-disc list-inside ml-8 space-y-1">
+                                    <li>Click the <strong>"Backend Data"</strong> button.</li>
+                                    <li>A login popup will appear. Enter Login ID: <strong>Admin</strong> and Password: <strong>Admin</strong>.</li>
+                                    <li>If successful, the Google Sheet containing the raw salary data will open in a new tab. If credentials are incorrect, an error message will be displayed.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h2 class="text-md sm:text-lg font-semibold text-green-500 mt-3 mb-1 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-arrow-repeat mr-2 text-green-500" viewBox="0 0 16 16">
+                                        <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+                                        <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.5 6.5 0 0 1 13.4 6H15a.5.5 0 0 1 0 1h-1.5a.5.5 0 0 1-.5-.5V3a.5.5 0 0 1 1 0v2.254A5.5 5.5 0 0 0 8 3m-5 8a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m9.925 0v1.75A5.5 5.5 0 0 0 8 13c-1.552 0-2.94-.707-3.857-1.818a.5.5 0 1 1 .771-.636A4.5 4.5 0 0 1 8 11.5c.61 0 1.174.142 1.666.402l1.166-1.4a.25.25 0 0 1 .384 0l1.966 2.36a.25.25 0 0 1-.192.41H11.5a.5.5 0 0 1 0-1h.668l-.756-.906z"/>
+                                    </svg>
+                                    6. Syncing Data
+                                </h2>
+                                <ul class="list-disc list-inside ml-8 space-y-1">
+                                    <li>Click the <strong>🔄 Sync icon</strong> located in the top header of the FMS.</li>
+                                    <li>This action refreshes the data displayed in the FMS, pulling the latest information from your backend Google Sheet. This is particularly important after you've initiated a new salary process via the Google Form or if any manual changes have been made directly in the Google Sheet.</li>
+                                </ul>
+                            </div>
+                            <div class="mt-4 sm:mt-6 p-3 sm:p-4 bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700 rounded-md">
+                                <p class="font-bold">🔧 Important Notes for Salary FMS:</p>
+                                <ul class="list-disc list-inside ml-4">
+                                    <li>Use the <strong>FMS on a desktop browser</strong> for full access to features and optimal layout.</li>
+                                    <li>Always <strong>click the 🔄 Sync icon</strong> after submitting a form or updating the backend sheet.</li>
+                                    <li>While initiating a new entry, ensure the <strong>Month, Year, and UID</strong> are correctly entered in the form.</li>
+                                    <li>Complete each stage <strong>before the planned date</strong> to avoid system-flagged delays.</li>
+                                    <li>Ensure each <strong>Take Action (...) field</strong> in the backend sheet contains the correct <strong>Google Form URL</strong> or instructions.</li>
+                                    <li>Only users with <strong>Login ID: Admin</strong> and <strong>Password: Admin</strong> can access the backend Google Sheet.</li>
+                                    <li>When a stage is marked complete, the FMS automatically logs the <strong>actual timestamp</strong> and updates the status.</li>
+                                    <li>A salary cycle is <strong>only considered complete</strong> after all three stages are fully approved.</li>
+                                    <li>Use the <strong>“Responsibilities” button</strong> to understand who handles each step in the process.</li>
+                                    <li><strong>Do not change column names</strong> or structure in the backend Google Sheet. This may break the FMS logic.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-4 sm:mt-6 text-right">
+                            <button type="button" id="okHowToApplyModalButtonSalaryFMS" class="btn btn-primary" aria-label="Close how to apply guide">OK</button> </div>
+                    </section>
+                </div>
+            </div>
+
+            <div id="stageActionModalSalaryFMS" class="modal"><div class="modal-content-wrapper">
+                <section class="modal-content bg-white">
+                    <span id="closeStageActionModalButtonSalaryFMS" class="close-button">&times;</span>
+                    <h2 class="text-lg sm:text-xl font-semibold text-gray-700 mb-3" id="stageActionModalTitleSalaryFMS">Confirm Stage Action</h2>
+                    <div id="stageActionModalContentSalaryFMS" class="text-sm text-gray-600 space-y-3 mb-4">
+                        <p id="stageActionModalMessageSalaryFMS"></p>
+                        <div id="stageActionModalInstructionsSalaryFMS" class="p-2 bg-gray-50 rounded-md border border-gray-200 break-words" style="display:none;">
+                            <strong class="text-gray-700">Instructions/Reference:</strong>
+                            <p id="stageActionModalInstructionsTextSalaryFMS" class="mt-1 whitespace-pre-wrap"></p>
+                        </div>
+                    </div>
+                    <div class="mt-5 sm:mt-6 flex justify-end space-x-3">
+                        <button type="button" id="stageActionModalCancelButtonSalaryFMS" class="btn btn-secondary">Cancel</button>
+                        <button type="button" id="stageActionModalConfirmButtonSalaryFMS" class="btn btn-success">Mark Complete</button>
+                    </div>
+                </section>
+            </div></div>
+
+            <div id="googleFormActionModalSalaryFMS" class="modal"><div class="modal-content-wrapper">
+                <section class="modal-content bg-gray-50">
+                    <span id="closeGoogleFormActionModalButtonSalaryFMS" class="close-button">&times;</span>
+                    <h2 class="text-xl sm:text-2xl font-semibold text-gray-700 mb-2 text-center" id="googleFormActionModalTitleSalaryFMS">Complete Action via Form</h2>
+                     <p class="text-xs sm:text-sm text-gray-500 text-center mb-1 sm:mb-2">Submit the form below. Closing this popup will attempt to sync data.</p>
+                    <iframe id="googleFormActionIframeSalaryFMS" src="about:blank" frameborder="0" marginheight="0" marginwidth="0">Loading Form…</iframe>
+                </section>
+            </div></div>
+
+            <div id="backendLoginModalSalaryFMS" class="modal"><div class="modal-content-wrapper">
+                <section class="modal-content bg-white">
+                    <span id="closeBackendLoginModalButtonSalaryFMS" class="close-button">&times;</span>
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Backend Access Login</h2>
+                    <form id="backendLoginFormSalaryFMS">
+                        <div class="mb-4">
+                            <label for="loginIdSalaryFMS" class="block text-sm font-medium text-gray-700">Login ID</label>
+                            <input type="text" id="loginIdSalaryFMS" name="loginIdSalaryFMS" required
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                        </div>
+                        <div class="mb-6">
+                            <label for="loginPasswordSalaryFMS" class="block text-sm font-medium text-gray-700">Password</label>
+                            <input type="password" id="loginPasswordSalaryFMS" name="loginPasswordSalaryFMS" required
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="button" id="cancelLoginButtonSalaryFMS" class="btn btn-secondary mr-2">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </div>
+                    </form>
+                </section>
+            </div></div>
+
+
+            <section id="entriesListSectionSalaryFMS" class="mb-6 sm:mb-10">
+                <h2 class="text-xl sm:text-2xl font-semibold text-gray-700 mb-4 sm:mb-6">All Salary Process Entries</h2>
+                <div class="flex flex-col md:flex-row justify-between items-center mb-3 sm:mb-4 space-y-3 md:space-y-0 md:space-x-4">
+                    <div id="searchInputContainerSalaryFMS" class="w-full md:w-auto md:flex-shrink-0">
+                        <input type="text" id="searchInputSalaryFMS" placeholder="Search by UID, Month, Year, Remarks..." class="p-2 border border-gray-300 rounded-md shadow-sm w-full text-sm">
+                    </div>
+                    <div id="filterControlsContainerSalaryFMS" class="w-full md:w-auto flex flex-col sm:flex-row sm:flex-wrap gap-2 items-center md:justify-end">
+                        <div class="filter-item w-full sm:w-auto">
+                            <select id="statusFilterSalaryFMS" class="p-2 border border-gray-300 rounded-md shadow-sm w-full text-sm">
+                                <option value="">All Statuses</option>
+                            </select>
+                        </div>
+                        <div class="filter-item w-full sm:w-auto">
+                            <input type="month" id="monthYearFilterSalaryFMS" class="p-2 border border-gray-300 rounded-md shadow-sm w-full text-sm" placeholder="Month-Year">
+                        </div>
+                        <div class="filter-item w-full sm:w-auto">
+                            <select id="actionStatusFilterSalaryFMS" class="p-2 border border-gray-300 rounded-md shadow-sm w-full text-sm">
+                                <option value="">All Actions</option>
+                                <option value="overdue">Overdue Actions</option>
+                                <option value="upcoming">Upcoming Actions (Next 7 Days)</option>
+                            </select>
+                        </div>
+                         <button id="clearFiltersButtonSalaryFMS" class="btn btn-warning text-sm p-2 w-full sm:w-auto">Clear Filters</button>
+                    </div>
+                </div>
+                <div id="tableStatusSalaryFMS" class="text-center p-4 text-gray-500">Loading entries...</div>
+                <div class="table-container overflow-x-auto bg-white rounded-lg shadow">
+                    <table class="min-w-full divide-y divide-gray-200 responsive-table">
+                        <thead id="entriesTableHeadSalaryFMS" class="bg-gray-50">
+                            <tr></tr>
+                        </thead>
+                        <tbody id="entriesTableBodySalaryFMS" class="bg-white divide-y divide-gray-200"></tbody>
+                    </table>
+                </div>
+                 <div id="paginationControlsSalaryFMS" class="mt-3 sm:mt-4 flex justify-center items-center space-x-1 sm:space-x-2"></div>
+            </section>
+        </div>
+
+        <div id="messageAlertModalSalaryFMS" class="modal"><div class="modal-content-wrapper">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeAlertModalSalaryFMS()">&times;</span>
+                <p id="modalMessageSalaryFMS" class="text-gray-700 text-center"></p>
+                <div class="mt-6 text-center default-modal-buttons-salary"><button onclick="closeAlertModalSalaryFMS()" class="btn btn-primary">OK</button></div>
+                <div class="mt-6 flex justify-center space-x-3 confirm-buttons-salary" style="display:none;"><button id="modalCancelButtonSalaryFMS" class="btn btn-secondary">Cancel</button><button id="modalConfirmButtonSalaryFMS" class="btn btn-danger">Confirm</button></div>
+            </div>
+        </div></div>
+
+        <footer class="py-4 sm:py-6 text-center text-xs sm:text-sm text-gray-500">
+            © 2025 Your Company Name. All rights reserved. </footer>
+    </div> <script>
+        // --- CONFIGURATION & GLOBAL VARS ---
+        // IMPORTANT: This is the CORRECTED API URL.
+        const API_ENDPOINT_URL_SALARY_FMS = 'https://script.google.com/macros/s/AKfycbwmzDOClRRodAesQobBvYW5F_3ynpQEk4OaPq1G_hr-3d9VVwLQa1bDW58rHAdHtFNfSg/exec';
+        // IMPORTANT: Replace with your actual Google Form URL for initiating a salary process
+        const GOOGLE_FORM_URL_SALARY_FMS = 'https://docs.google.com/forms/d/e/1FAIpQLScl6VQ4usZ6eib8s74NNLb4lvrOvBhCsRjXy846eIeoogDBVw/viewform';
+        // IMPORTANT: Replace with your actual Google Sheet URL for the backend data
+        const BACKEND_DATA_SHEET_URL_SALARY_FMS = 'https://docs.google.com/spreadsheets/d/1jfKZHM9GdqRmCHGTzBsZtVR6uMqIgEVjn1IToQbSSgI/edit?gid=965727560#gid=965727560';
+
+
+        const ITEMS_PER_PAGE_SALARY_FMS = 5;
+        let currentPageSalaryFMS = 1;
+        let allEntriesSalaryFMS = [];
+        let currentlyDisplayedEntriesSalaryFMS = [];
+
+        // --- SALARY FMS STATUSES ---
+        const STATUS_MAP_SALARY_FMS = {
+            PENDING_MD_APPROVAL: "Pending: MD Approval",
+            PENDING_ACCOUNTS_SHEET: "Pending: Salary Sheet to Accounts",
+            PENDING_SALARY_PROCEED: "Pending: Salary Proceed",
+            SALARY_PROCESSED: "Completed: Salary Processed"
+        };
+
+        const SALARY_PROCESSING_STAGES = [
+            {
+                stageKey: 'MDApproval',
+                name: "Take Approvals from MD",
+                plannedKey: "Take Approvals from MD Planned",
+                actualKey: "Take Approvals from MD Actual",
+                statusKey: "Take Approvals from MD Status",
+                commentsKey: "Take Approvals from MD Comments",
+                timeDelayKey: "Take Approvals from MD Time Delay",
+                takeActionKey: "Take Action (Take Approvals from MD)",
+                stepCodeKey: "Step Code 1",
+                nextStatus: STATUS_MAP_SALARY_FMS.PENDING_ACCOUNTS_SHEET,
+                buttonText: "Mark MD Approval Done"
+            },
+            {
+                stageKey: 'SheetToAccounts',
+                name: "Salary Sheet given to Accounts",
+                plannedKey: "Salary Sheet given to Accounts Planned",
+                actualKey: "Salary Sheet given to Accounts Actual",
+                statusKey: "Salary Sheet given to Accounts Status",
+                commentsKey: "Salary Sheet given to Accounts Comments",
+                timeDelayKey: "Salary Sheet given to Accounts Time Delay",
+                takeActionKey: "Take Action (Salary Sheet given to Accounts)",
+                stepCodeKey: "Step Code 2",
+                nextStatus: STATUS_MAP_SALARY_FMS.PENDING_SALARY_PROCEED,
+                buttonText: "Mark Sheet Given"
+            },
+            {
+                stageKey: 'SalaryProceed',
+                name: "Salary Proceed",
+                plannedKey: "Salary Proceed Planned",
+                actualKey: "Salary Proceed Actual",
+                statusKey: "Salary Proceed Status",
+                commentsKey: "Salary Proceed Comments",
+                timeDelayKey: "Salary Proceed Time Delay",
+                takeActionKey: "Take Action (Salary Proceed)",
+                stepCodeKey: "Step Code 3",
+                nextStatus: STATUS_MAP_SALARY_FMS.SALARY_PROCESSED,
+                buttonText: "Mark Salary Processed"
+            }
+        ];
+
+        const tableHeadersConfigSalaryFMS = [
+            { key: 'UID', label: 'UID' },
+            { key: 'Salary for the Month', label: 'Month' },
+            { key: 'Year', label: 'Year' },
+            { key: 'status', label: 'Overall Status' },
+            { key: 'nextPlannedActionOn', label: 'Next Planned On', isDate: true, customRender: (entry) => getNextPlannedActionTimestampSalaryFMS(entry) },
+            { key: 'actions', label: 'Actions' }
+        ];
+
+
+        // --- DOM ELEMENTS ---
+        const fmsMainContainerSalary = document.getElementById('fmsMainContainerSalary');
+        const mobileRestrictionOverlaySalary = document.getElementById('mobileRestrictionOverlaySalary');
+
+        const addEntrySectionModalSalary = document.getElementById('addEntrySectionModalSalary');
+        const openEntryFormModalButtonSalary = document.getElementById('openEntryFormModalButtonSalary');
+        const closeEntryFormModalButtonSalary = document.getElementById('closeEntryFormModalButtonSalary');
+        const googleFormIframeSalaryFMS = document.getElementById('googleFormIframeSalaryFMS');
+
+        const doerInfoModalSalaryFMS = document.getElementById('doerInfoModalSalaryFMS');
+        const openDoerInfoModalButtonSalaryFMS = document.getElementById('openDoerInfoModalButtonSalaryFMS');
+        const closeDoerInfoModalButtonSalaryFMS = document.getElementById('closeDoerInfoModalButtonSalaryFMS');
+        const okDoerInfoModalButtonSalaryFMS = document.getElementById('okDoerInfoModalButtonSalaryFMS');
+
+        const howToApplyModalSalaryFMS = document.getElementById('howToApplyModalSalaryFMS'); // Renamed
+        const openHowToApplyModalButtonSalaryFMS = document.getElementById('openHowToApplyModalButtonSalaryFMS'); // Renamed
+        const closeHowToApplyModalButtonSalaryFMS = document.getElementById('closeHowToApplyModalButtonSalaryFMS'); // Renamed
+        const okHowToApplyModalButtonSalaryFMS = document.getElementById('okHowToApplyModalButtonSalaryFMS'); // Renamed
+
+        const openBackendDataButtonSalaryFMS = document.getElementById('openBackendDataButtonSalaryFMS');
+        const backendLoginModalSalaryFMS = document.getElementById('backendLoginModalSalaryFMS');
+        const closeBackendLoginModalButtonSalaryFMS = document.getElementById('closeBackendLoginModalButtonSalaryFMS');
+        const backendLoginFormSalaryFMS = document.getElementById('backendLoginFormSalaryFMS');
+        const cancelLoginButtonSalaryFMS = document.getElementById('cancelLoginButtonSalaryFMS');
+
+        const entryDetailsModalSalaryFMS = document.getElementById('entryDetailsModalSalaryFMS');
+        const detailsModalTitleSalaryFMS = document.getElementById('detailsModalTitleSalaryFMS');
+        const detailsModalSubtitleSalaryFMS = document.getElementById('detailsModalSubtitleSalaryFMS');
+        const detailsModalContentSalaryFMS = document.getElementById('detailsModalContentSalaryFMS');
+
+        const messageAlertModalSalaryFMS = document.getElementById('messageAlertModalSalaryFMS');
+        const modalMessageSalaryFMS = document.getElementById('modalMessageSalaryFMS');
+        const defaultModalButtonsSalary = messageAlertModalSalaryFMS.querySelector('.default-modal-buttons-salary');
+        const confirmModalButtonsSalary = messageAlertModalSalaryFMS.querySelector('.confirm-buttons-salary');
+        const modalConfirmButtonSalaryFMS = document.getElementById('modalConfirmButtonSalaryFMS');
+        const modalCancelButtonSalaryFMS = document.getElementById('modalCancelButtonSalaryFMS');
+
+        const stageActionModalSalaryFMS = document.getElementById('stageActionModalSalaryFMS');
+        const stageActionModalTitleSalaryFMS = document.getElementById('stageActionModalTitleFMS');
+        const stageActionModalMessageSalaryFMS = document.getElementById('stageActionModalMessageSalaryFMS');
+        const stageActionModalInstructionsSalaryFMS = document.getElementById('stageActionModalInstructionsSalaryFMS');
+        const stageActionModalInstructionsTextSalaryFMS = document.getElementById('stageActionModalInstructionsTextSalaryFMS');
+        const stageActionModalConfirmButtonSalaryFMS = document.getElementById('stageActionModalConfirmButtonSalaryFMS');
+        const stageActionModalCancelButtonSalaryFMS = document.getElementById('stageActionModalCancelButtonSalaryFMS');
+        const closeStageActionModalButtonSalaryFMS = document.getElementById('closeStageActionModalButtonSalaryFMS');
+
+        const googleFormActionModalSalaryFMS = document.getElementById('googleFormActionModalSalaryFMS');
+        const googleFormActionModalTitleSalaryFMS = document.getElementById('googleFormActionModalTitleSalaryFMS');
+        const googleFormActionIframeSalaryFMS = document.getElementById('googleFormActionIframeSalaryFMS');
+        const closeGoogleFormActionModalButtonSalaryFMS = document.getElementById('closeGoogleFormActionModalButtonSalaryFMS');
+
+        const entriesTableHeadSalaryFMS = document.getElementById('entriesTableHeadSalaryFMS');
+        const entriesTableBodySalaryFMS = document.getElementById('entriesTableBodySalaryFMS');
+        const tableStatusSalaryFMS = document.getElementById('tableStatusSalaryFMS');
+        const searchInputSalaryFMS = document.getElementById('searchInputSalaryFMS');
+        const paginationControlsSalaryFMS = document.getElementById('paginationControlsSalaryFMS');
+
+        const scorecardTotalPendingSalary = document.getElementById('scorecardTotalPendingSalary');
+        const scorecardPendingMDApproval = document.getElementById('scorecardPendingMDApproval');
+        const scorecardPendingAccountsSheet = document.getElementById('scorecardPendingAccountsSheet');
+        const scorecardPendingSalaryProceed = document.getElementById('scorecardPendingSalaryProceed');
+        const scorecardTotalProcessedSalary = document.getElementById('scorecardTotalProcessedSalary');
+
+
+        const entranceAnimationOverlaySalary = document.getElementById('entranceAnimationOverlaySalary');
+
+        const statusFilterSalaryFMS = document.getElementById('statusFilterSalaryFMS');
+        const monthYearFilterSalaryFMS = document.getElementById('monthYearFilterSalaryFMS');
+        const actionStatusFilterSalaryFMS = document.getElementById('actionStatusFilterSalaryFMS');
+        const clearFiltersButtonSalaryFMS = document.getElementById('clearFiltersButtonSalaryFMS');
+
+
+        // --- MOBILE RESTRICTION ---
+        function checkMobileViewSalaryFMS() {
+            if (window.innerWidth < 768) {
+                if(fmsMainContainerSalary) fmsMainContainerSalary.style.display = 'none';
+                if(mobileRestrictionOverlaySalary) mobileRestrictionOverlaySalary.style.display = 'flex';
+            } else {
+                if(fmsMainContainerSalary) fmsMainContainerSalary.style.display = 'block';
+                if(mobileRestrictionOverlaySalary) mobileRestrictionOverlaySalary.style.display = 'none';
+            }
+        }
+
+
+        // --- MODAL CONTROL FUNCTIONS ---
+        function openModalSalaryFMS(modalElement) {
+            const modalContent = modalElement.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.classList.remove('modal-popup-active');
+                void modalContent.offsetWidth;
+                modalContent.classList.add('modal-popup-active');
+            }
+            modalElement.style.display = "flex";
+        }
+        function closeModalSalaryFMS(modalElement) {
+            modalElement.style.display = "none";
+        }
+
+        function openEntryDetailsModalSalaryFMS(entryId) {
+            const entry = allEntriesSalaryFMS.find(e => e.UID === entryId);
+            if (!entry) {
+                showUserAlertSalaryFMS("Error: Could not find entry details for UID: " + entryId, "error");
+                return;
+            }
+            detailsModalTitleSalaryFMS.textContent = `Salary: ${entry['Salary for the Month'] || 'N/A'} ${entry.Year || ''} (UID: ${entry.UID})`;
+            detailsModalSubtitleSalaryFMS.textContent = `Initiated: ${formatDateForDisplay(entry.Timestamp)} - Status: ${entry.status || determineSalaryStatus(entry)}`;
+            populateDetailsModalSalaryFMS(entry);
+            openModalSalaryFMS(entryDetailsModalSalaryFMS);
+        }
+
+        function showUserAlertSalaryFMS(message, type = 'info', onConfirm = null) {
+            modalMessageSalaryFMS.textContent = message;
+            openModalSalaryFMS(messageAlertModalSalaryFMS);
+
+            defaultModalButtonsSalary.style.display = 'none';
+            confirmModalButtonsSalary.style.display = 'none';
+
+            if (type === 'confirm' && onConfirm) {
+                confirmModalButtonsSalary.style.display = 'flex';
+                modalConfirmButtonSalaryFMS.textContent = 'Confirm';
+                const newConfirmButton = modalConfirmButtonSalaryFMS.cloneNode(true);
+                modalConfirmButtonSalaryFMS.parentNode.replaceChild(newConfirmButton, modalConfirmButtonSalaryFMS);
+                newConfirmButton.onclick = () => { onConfirm(); closeModalSalaryFMS(messageAlertModalSalaryFMS); };
+
+                const newCancelButton = modalCancelButtonSalaryFMS.cloneNode(true);
+                modalCancelButtonSalaryFMS.parentNode.replaceChild(newCancelButton, modalCancelButtonSalaryFMS);
+                newCancelButton.onclick = closeAlertModalSalaryFMS;
+
+            } else {
+                defaultModalButtonsSalary.style.display = 'block';
+                 const okButton = defaultModalButtonsSalary.querySelector('button');
+                 const newOkButton = okButton.cloneNode(true);
+                 okButton.parentNode.replaceChild(newOkButton, okButton);
+                 newOkButton.onclick = closeAlertModalSalaryFMS;
+            }
+
+            modalMessageSalaryFMS.classList.remove('text-green-600', 'text-red-600', 'text-yellow-600');
+            if (type === 'success') modalMessageSalaryFMS.classList.add('text-green-600');
+            else if (type === 'error') modalMessageSalaryFMS.classList.add('text-red-600');
+            else if (type === 'warning') modalMessageSalaryFMS.classList.add('text-yellow-600');
+        }
+        function closeAlertModalSalaryFMS() { closeModalSalaryFMS(messageAlertModalSalaryFMS); }
+
+
+        function openStageActionModalSalaryFMS(entry, stage, stageIndex) {
+            const actionInstruction = entry[stage.takeActionKey];
+            const isGoogleForm = actionInstruction && typeof actionInstruction === 'string' && actionInstruction.includes('docs.google.com/forms');
+
+            if (isGoogleForm) {
+                if(googleFormActionModalTitleSalaryFMS) googleFormActionModalTitleSalaryFMS.textContent = `Action: ${stage.name}`;
+                googleFormActionIframeSalaryFMS.src = actionInstruction + (actionInstruction.includes('?') ? '&embedded=true' : '?embedded=true');
+                if(googleFormActionModalSalaryFMS) googleFormActionModalSalaryFMS.dataset.currentEntryUID = entry.UID;
+                openModalSalaryFMS(googleFormActionModalSalaryFMS);
+            } else {
+                stageActionModalTitleSalaryFMS.textContent = `Confirm Stage: ${stage.name}`;
+                stageActionModalMessageSalaryFMS.textContent = `Are you sure you want to mark "${stage.name}" as complete for UID ${entry.UID} (Salary: ${entry['Salary for the Month']} ${entry.Year})?`;
+
+                if (actionInstruction && !(String(actionInstruction).startsWith('http://') || String(actionInstruction).startsWith('https://'))) {
+                    stageActionModalInstructionsTextSalaryFMS.textContent = actionInstruction;
+                    stageActionModalInstructionsSalaryFMS.style.display = 'block';
+                } else if (actionInstruction) {
+                     stageActionModalInstructionsTextSalaryFMS.innerHTML = `Associated Link (for reference, copy if needed): <a href="${actionInstruction}" target="_blank" class="text-indigo-600 hover:underline">${actionInstruction}</a>`;
+                    stageActionModalInstructionsSalaryFMS.style.display = 'block';
+                }
+                else {
+                    stageActionModalInstructionsSalaryFMS.style.display = 'none';
+                }
+
+                const newConfirmBtn = stageActionModalConfirmButtonSalaryFMS.cloneNode(true);
+                stageActionModalConfirmButtonSalaryFMS.parentNode.replaceChild(newConfirmBtn, stageActionModalConfirmButtonSalaryFMS);
+                newConfirmBtn.textContent = stage.buttonText || "Mark Complete";
+                newConfirmBtn.onclick = () => {
+                    processSalaryStep(entry.UID, newConfirmBtn, stageIndex);
+                    closeModalSalaryFMS(stageActionModalSalaryFMS);
+                };
+                openModalSalaryFMS(stageActionModalSalaryFMS);
+            }
+        }
+
+
+        window.onclick = (event) => {
+            const modals = [addEntrySectionModalSalary, doerInfoModalSalaryFMS, entryDetailsModalSalaryFMS, messageAlertModalSalaryFMS, howToApplyModalSalaryFMS, stageActionModalSalaryFMS, googleFormActionModalSalaryFMS, backendLoginModalSalaryFMS];
+            modals.forEach(modal => {
+                if (modal && modal.style.display === "flex" && event.target === modal) {
+                    closeModalSalaryFMS(modal);
+                     if (modal.id === 'addEntrySectionModalSalary') {
+                        googleFormIframeSalaryFMS.src = 'about:blank';
+                        handleAddSalaryModalClose();
+                    } else if (modal.id === 'googleFormActionModalSalaryFMS') {
+                        googleFormActionIframeSalaryFMS.src = 'about:blank';
+                        handleGoogleFormActionModalCloseSalaryFMS();
+                    } else if (modal.id === 'backendLoginModalSalaryFMS') {
+                        backendLoginFormSalaryFMS.reset();
+                    }
+                }
+            });
+        }
+
+        function handleGoogleFormActionModalCloseSalaryFMS() {
+            const currentEntryUID = googleFormActionModalSalaryFMS.dataset.currentEntryUID;
+            triggerSyncSalaryFMS("Attempting to sync data after form interaction...", currentEntryUID);
+            if(googleFormActionModalSalaryFMS.dataset.currentEntryUID) delete googleFormActionModalSalaryFMS.dataset.currentEntryUID;
+        }
+
+        function handleAddSalaryModalClose() {
+             triggerSyncSalaryFMS("Attempting to sync data after initiating salary process...", null);
+        }
+
+
+        function triggerSyncSalaryFMS(message, entryUIDToRefreshDetails = null) {
+            showUserAlertSalaryFMS(message, "info");
+            const syncButtonForAnimation = document.getElementById('syncButtonSalaryFMS');
+            const svgIcon = syncButtonForAnimation ? syncButtonForAnimation.querySelector('svg') : null;
+            if (svgIcon) svgIcon.classList.add('rotate-animate');
+            if (syncButtonForAnimation) setButtonLoadingSalaryFMS(true, syncButtonForAnimation);
+
+            fetchEntriesSalaryFMS().then(() => {
+                showUserAlertSalaryFMS("Data synced. Please check for updates.", "success");
+
+                if (entryDetailsModalSalaryFMS.style.display === "flex" && entryUIDToRefreshDetails) {
+                    const updatedEntry = allEntriesSalaryFMS.find(e => e.UID === entryUIDToRefreshDetails);
+                    if (updatedEntry) {
+                        populateDetailsModalSalaryFMS(updatedEntry);
+                         detailsModalSubtitleSalaryFMS.textContent = `Initiated: ${formatDateForDisplay(updatedEntry.Timestamp)} - Status: ${updatedEntry.status || determineSalaryStatus(updatedEntry)}`;
+                    } else {
+                        closeModalSalaryFMS(entryDetailsModalSalaryFMS);
+                    }
+                }
+            }).catch(error => {
+                console.error("Error during sync:", error);
+                showUserAlertSalaryFMS("Error syncing data: " + error.message, "error");
+            }).finally(() => {
+                if (svgIcon) svgIcon.classList.remove('rotate-animate');
+                if (syncButtonForAnimation) setButtonLoadingSalaryFMS(false, syncButtonForAnimation);
+            });
+        }
+
+
+        // --- UTILITY FUNCTIONS ---
+        function setButtonLoadingSalaryFMS(isLoading, button) {
+            if (!button) return;
+            button.disabled = isLoading;
+            button.classList.toggle('opacity-50', isLoading);
+            button.classList.toggle('cursor-not-allowed', isLoading);
+        }
+
+        function formatDateForDisplay(dateTimeStringOrObject) {
+            if (!dateTimeStringOrObject || dateTimeStringOrObject === 'N/A' || String(dateTimeStringOrObject).trim() === "" || dateTimeStringOrObject === "SKIPPED") return 'N/A';
+            let date;
+            if (dateTimeStringOrObject instanceof Date) {
+                date = dateTimeStringOrObject;
+            } else {
+                const customFormatRegex = /^(\d{1,2})-([A-Za-z]{3})-(\d{4}) (\d{1,2}):(\d{2}):(\d{2}) (AM|PM)$/;
+                const isoWithMillisRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+                const isoDateOnlyRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+                let match = typeof dateTimeStringOrObject === 'string' ? dateTimeStringOrObject.match(customFormatRegex) : null;
+
+                if (match) {
+                    const months = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+                    let hours = parseInt(match[4], 10);
+                    if (match[7].toUpperCase() === 'PM' && hours < 12) hours += 12;
+                    if (match[7].toUpperCase() === 'AM' && hours === 12) hours = 0;
+                    date = new Date(Date.UTC(parseInt(match[3],10), months[match[2]], parseInt(match[1],10), hours, parseInt(match[5],10), parseInt(match[6],10)));
+                } else if (typeof dateTimeStringOrObject === 'string' && (isoWithMillisRegex.test(dateTimeStringOrObject) || isoDateOnlyRegex.test(dateTimeStringOrObject))) {
+                    if (isoDateOnlyRegex.test(dateTimeStringOrObject) && dateTimeStringOrObject.length === 10) {
+                         const parts = dateTimeStringOrObject.split('-');
+                         date = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
+                    } else {
+                        date = new Date(dateTimeStringOrObject);
+                    }
+                } else {
+                    date = new Date(dateTimeStringOrObject);
+                }
+            }
+
+            if (isNaN(date.getTime())) {
+                return String(dateTimeStringOrObject);
+            }
+
+            const isDateOnly = date.getUTCHours() === 0 && date.getUTCMinutes() === 0 && date.getUTCSeconds() === 0;
+            const options = isDateOnly
+                ? { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }
+                : { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'UTC' };
+            let formatted = new Intl.DateTimeFormat('en-GB', options).format(date);
+            formatted = formatted.replace(',', '');
+            if (!isDateOnly) {
+                 formatted = formatted.replace(/\./g, '').toUpperCase();
+            }
+            return formatted;
+        }
+
+         function formatDateForInput(date) {
+            if (!(date instanceof Date) || isNaN(date.getTime())) {
+                date = new Date();
+            }
+            const day = String(date.getDate()).padStart(2, '0');
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const monthName = months[date.getMonth()];
+            const year = date.getFullYear();
+            let hours = date.getHours();
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const strHours = String(hours).padStart(2, '0');
+            return `${day}-${monthName}-${year} ${strHours}:${minutes}:${seconds} ${ampm}`;
+        }
+
+        function addDays(dateInput, days) {
+            let baseDate;
+            if (dateInput instanceof Date) {
+                baseDate = new Date(dateInput.getTime());
+            } else if (typeof dateInput === 'string') {
+                const parsed = parseFlexibleDateSalaryFMS(dateInput);
+                if (parsed && !isNaN(parsed.getTime())) {
+                    baseDate = parsed;
+                } else {
+                    baseDate = new Date();
+                }
+            } else {
+                baseDate = new Date();
+            }
+            baseDate.setDate(baseDate.getDate() + days);
+            return baseDate;
+        }
+
+        function parseFlexibleDateSalaryFMS(dateStr) {
+            if (!dateStr || typeof dateStr !== 'string') return null;
+            const customFormatRegex = /^(\d{1,2})-([A-Za-z]{3})-(\d{4})(?: (\d{1,2}):(\d{2}):(\d{2}) (AM|PM))?$/;
+            let match = dateStr.match(customFormatRegex);
+            if (match) {
+                const months = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+                let hours = 0, minutes = 0, seconds = 0;
+                if (match[4] && match[7]) {
+                    hours = parseInt(match[4], 10);
+                    minutes = parseInt(match[5], 10);
+                    seconds = parseInt(match[6], 10);
+                    if (match[7].toUpperCase() === 'PM' && hours < 12) hours += 12;
+                    if (match[7].toUpperCase() === 'AM' && hours === 12) hours = 0;
+                }
+                return new Date(Date.UTC(parseInt(match[3],10), months[match[2]], parseInt(match[1],10), hours, minutes, seconds));
+            }
+            const standardDate = new Date(dateStr);
+            if (!isNaN(standardDate.getTime())) return standardDate;
+            return null;
+        }
+
+        function calculateTimeDelaySalaryFMS(actualTimestamp, plannedTimestamp) {
+            if (!actualTimestamp || !plannedTimestamp || actualTimestamp === "N/A" || plannedTimestamp === "N/A" || String(actualTimestamp).trim() === "" || String(plannedTimestamp).trim() === "" || actualTimestamp === "SKIPPED" || plannedTimestamp === "SKIPPED") return "<span class='text-gray-400'>N/A</span>";
+            const actual = parseFlexibleDateSalaryFMS(actualTimestamp);
+            const planned = parseFlexibleDateSalaryFMS(plannedTimestamp);
+
+            if (!actual || isNaN(actual.getTime()) || !planned || isNaN(planned.getTime())) {
+                 return "<span class='text-gray-400'>Invalid Date</span>";
+            }
+            const diff = actual.getTime() - planned.getTime();
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            let delayClass = 'delay-ontime';
+            let delayText = "On Time";
+
+            if (diff > 0) {
+                delayClass = 'delay-late';
+                if (days > 0) delayText = `${days} day(s) late`;
+                else if (hours > 0) delayText = `${hours} hour(s) late`;
+                else if (minutes > 0) delayText = `${minutes} min(s) late`;
+                else delayText = "Slightly Late";
+            } else if (diff < 0) {
+                delayClass = 'delay-early';
+                const absDays = Math.abs(days);
+                const absHours = Math.abs(hours);
+                const absMinutes = Math.abs(minutes);
+                if (absDays > 0) delayText = `${absDays} day(s) early`;
+                else if (absHours > 0) delayText = `${absHours} hour(s) early`;
+                else if (absMinutes > 0) delayText = `${absMinutes} min(s) early`;
+                else delayText = "Slightly Early";
+            }
+            return `<span class="${delayClass}">${delayText}</span>`;
+        }
+
+        // --- SCORECARD FUNCTIONS ---
+        function renderScorecardsSalaryFMS(entries) {
+            let totalPending = 0;
+            let pendingMD = 0;
+            let pendingSheet = 0;
+            let pendingProceed = 0;
+            let totalProcessed = 0;
+
+            entries.forEach(entry => {
+                const status = entry.status || determineSalaryStatus(entry);
+                if (status === STATUS_MAP_SALARY_FMS.SALARY_PROCESSED) {
+                    totalProcessed++;
+                } else {
+                    totalPending++;
+                    if (status === STATUS_MAP_SALARY_FMS.PENDING_MD_APPROVAL) pendingMD++;
+                    else if (status === STATUS_MAP_SALARY_FMS.PENDING_ACCOUNTS_SHEET) pendingSheet++;
+                    else if (status === STATUS_MAP_SALARY_FMS.PENDING_SALARY_PROCEED) pendingProceed++;
+                }
+            });
+
+            scorecardTotalPendingSalary.textContent = totalPending;
+            scorecardPendingMDApproval.textContent = pendingMD;
+            scorecardPendingAccountsSheet.textContent = pendingSheet;
+            scorecardPendingSalaryProceed.textContent = pendingProceed;
+            scorecardTotalProcessedSalary.textContent = totalProcessed;
+        }
+
+
+        function initializeTableHeadersSalaryFMS() {
+            const headerRow = entriesTableHeadSalaryFMS.querySelector('tr') || entriesTableHeadSalaryFMS.appendChild(document.createElement('tr'));
+            headerRow.innerHTML = '';
+
+            tableHeadersConfigSalaryFMS.forEach(config => {
+                const th = document.createElement('th');
+                th.className = 'px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                th.textContent = config.label;
+                headerRow.appendChild(th);
+            });
+        }
+
+        // --- EVENT LISTENERS & INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            checkMobileViewSalaryFMS();
+            window.addEventListener('resize', checkMobileViewSalaryFMS);
+
+            if (mobileRestrictionOverlaySalary.style.display === 'none') {
+                initializeTableHeadersSalaryFMS();
+                fetchEntriesSalaryFMS().then(populateFilterDropdownsSalaryFMS);
+
+                openEntryFormModalButtonSalary.addEventListener('click', () => {
+                    if (GOOGLE_FORM_URL_SALARY_FMS === 'YOUR_SALARY_PROCESS_GOOGLE_FORM_URL_HERE') {
+                        showUserAlertSalaryFMS("Placeholder: Configure your Google Form URL for initiating salary processes in the script (variable GOOGLE_FORM_URL_SALARY_FMS).", "warning");
+                        googleFormIframeSalaryFMS.src = 'about:blank';
+                    } else {
+                        googleFormIframeSalaryFMS.src = GOOGLE_FORM_URL_SALARY_FMS + (GOOGLE_FORM_URL_SALARY_FMS.includes('?') ? '&embedded=true' : '?embedded=true');
+                    }
+                    openModalSalaryFMS(addEntrySectionModalSalary);
+                });
+                closeEntryFormModalButtonSalary.addEventListener('click', () => {
+                    closeModalSalaryFMS(addEntrySectionModalSalary);
+                    googleFormIframeSalaryFMS.src = 'about:blank';
+                    handleAddSalaryModalClose();
+                });
+
+                openDoerInfoModalButtonSalaryFMS.addEventListener('click', () => openModalSalaryFMS(doerInfoModalSalaryFMS));
+                closeDoerInfoModalButtonSalaryFMS.addEventListener('click', () => closeModalSalaryFMS(doerInfoModalSalaryFMS));
+                okDoerInfoModalButtonSalaryFMS.addEventListener('click', () => closeModalSalaryFMS(doerInfoModalSalaryFMS));
+
+                if(openBackendDataButtonSalaryFMS) {
+                    openBackendDataButtonSalaryFMS.addEventListener('click', () => {
+                        openModalSalaryFMS(backendLoginModalSalaryFMS);
+                    });
+                }
+                if(closeBackendLoginModalButtonSalaryFMS) {
+                    closeBackendLoginModalButtonSalaryFMS.addEventListener('click', () => {
+                        closeModalSalaryFMS(backendLoginModalSalaryFMS);
+                        backendLoginFormSalaryFMS.reset();
+                    });
+                }
+                if(cancelLoginButtonSalaryFMS) {
+                     cancelLoginButtonSalaryFMS.addEventListener('click', () => {
+                        closeModalSalaryFMS(backendLoginModalSalaryFMS);
+                        backendLoginFormSalaryFMS.reset();
+                    });
+                }
+                if(backendLoginFormSalaryFMS) {
+                    backendLoginFormSalaryFMS.addEventListener('submit', (event) => {
+                        event.preventDefault();
+                        const loginId = document.getElementById('loginIdSalaryFMS').value;
+                        const password = document.getElementById('loginPasswordSalaryFMS').value;
+
+                        if (loginId === 'Admin' && password === 'Admin') {
+                            if (BACKEND_DATA_SHEET_URL_SALARY_FMS === 'YOUR_SALARY_BACKEND_GOOGLE_SHEET_URL_HERE') {
+                                showUserAlertSalaryFMS('Placeholder: Configure the Backend Data Sheet URL in the script.', 'warning');
+                            } else {
+                                window.open(BACKEND_DATA_SHEET_URL_SALARY_FMS, '_blank');
+                            }
+                            closeModalSalaryFMS(backendLoginModalSalaryFMS);
+                            backendLoginFormSalaryFMS.reset();
+                        } else {
+                            showUserAlertSalaryFMS('Login Failed: Invalid ID or Password.', 'error');
+                        }
+                    });
+                }
+
+                openHowToApplyModalButtonSalaryFMS.addEventListener('click', () => openModalSalaryFMS(howToApplyModalSalaryFMS)); // Renamed
+                closeHowToApplyModalButtonSalaryFMS.addEventListener('click', () => closeModalSalaryFMS(howToApplyModalSalaryFMS)); // Renamed
+                okHowToApplyModalButtonSalaryFMS.addEventListener('click', () => closeModalSalaryFMS(howToApplyModalSalaryFMS)); // Renamed
+
+                modalCancelButtonSalaryFMS.onclick = closeAlertModalSalaryFMS;
+
+                if(closeStageActionModalButtonSalaryFMS) closeStageActionModalButtonSalaryFMS.onclick = () => closeModalSalaryFMS(stageActionModalSalaryFMS);
+                if(stageActionModalCancelButtonSalaryFMS) stageActionModalCancelButtonSalaryFMS.onclick = () => closeModalSalaryFMS(stageActionModalSalaryFMS);
+
+                if (closeGoogleFormActionModalButtonSalaryFMS) {
+                    closeGoogleFormActionModalButtonSalaryFMS.onclick = () => {
+                        closeModalSalaryFMS(googleFormActionModalSalaryFMS);
+                        googleFormActionIframeSalaryFMS.src = 'about:blank';
+                        handleGoogleFormActionModalCloseSalaryFMS();
+                    };
+                }
+
+                updateDateTimeSalaryFMS();
+                setInterval(updateDateTimeSalaryFMS, 1000);
+
+                const syncButton = document.getElementById('syncButtonSalaryFMS');
+                if (syncButton) {
+                    syncButton.addEventListener('click', () => {
+                       triggerSyncSalaryFMS("Syncing data manually...", null);
+                    });
+                }
+
+                searchInputSalaryFMS.addEventListener('input', applyFiltersAndSearchSalaryFMS);
+                statusFilterSalaryFMS.addEventListener('change', applyFiltersAndSearchSalaryFMS);
+                monthYearFilterSalaryFMS.addEventListener('change', applyFiltersAndSearchSalaryFMS);
+                actionStatusFilterSalaryFMS.addEventListener('change', applyFiltersAndSearchSalaryFMS);
+
+                clearFiltersButtonSalaryFMS.addEventListener('click', () => {
+                    searchInputSalaryFMS.value = '';
+                    statusFilterSalaryFMS.value = '';
+                    monthYearFilterSalaryFMS.value = '';
+                    actionStatusFilterSalaryFMS.value = '';
+                    applyFiltersAndSearchSalaryFMS();
+                });
+            }
+        });
+
+        function determineSalaryStatus(entry) {
+            for (let i = SALARY_PROCESSING_STAGES.length - 1; i >= 0; i--) {
+                const stage = SALARY_PROCESSING_STAGES[i];
+                if (entry[stage.actualKey] && entry[stage.actualKey] !== "N/A" && String(entry[stage.actualKey]).trim() !== "") {
+                    return stage.nextStatus;
+                }
+            }
+            return STATUS_MAP_SALARY_FMS.PENDING_MD_APPROVAL;
+        }
+
+
+        async function processSalaryStep(entryUID, buttonElement, stageIndex) {
+            if(buttonElement) setButtonLoadingSalaryFMS(true, buttonElement);
+
+            const entryIdx = allEntriesSalaryFMS.findIndex(e => e.UID === entryUID);
+            if (entryIdx === -1) {
+                showUserAlertSalaryFMS('Error: Entry not found for update.', 'error');
+                if(buttonElement) setButtonLoadingSalaryFMS(false, buttonElement);
+                return;
+            }
+
+            const now = new Date();
+            const entryToUpdateLocally = { ...allEntriesSalaryFMS[entryIdx] };
+            const currentStage = SALARY_PROCESSING_STAGES[stageIndex];
+            const dataToUpdatePayload = {};
+
+            dataToUpdatePayload[currentStage.actualKey] = formatDateForInput(now);
+
+            const plannedTimestamp = entryToUpdateLocally[currentStage.plannedKey];
+            if (plannedTimestamp && plannedTimestamp !== "SKIPPED" && plannedTimestamp !== "N/A") {
+                const timeDelayString = calculateTimeDelaySalaryFMS(dataToUpdatePayload[currentStage.actualKey], plannedTimestamp).replace(/<[^>]*>?/gm, '');
+                dataToUpdatePayload[currentStage.timeDelayKey] = timeDelayString;
+            } else {
+                dataToUpdatePayload[currentStage.timeDelayKey] = "N/A";
+            }
+
+            let newStatusDeterminedByThisStep = currentStage.nextStatus;
+
+            if (stageIndex + 1 < SALARY_PROCESSING_STAGES.length) {
+                const nextStage = SALARY_PROCESSING_STAGES[stageIndex + 1];
+                if (!entryToUpdateLocally[nextStage.plannedKey] || parseFlexibleDateSalaryFMS(entryToUpdateLocally[nextStage.plannedKey]) < now) {
+                     dataToUpdatePayload[nextStage.plannedKey] = formatDateForInput(addDays(now, 1)); // Default 1 day for next step in salary
+                }
+            }
+
+            try {
+                 if (API_ENDPOINT_URL_SALARY_FMS.includes('macros/library/d')) { // Check if it's still a library URL
+                    showUserAlertSalaryFMS('Configuration Error: The API URL is a library URL. Please deploy your Apps Script as a web app and use the /exec URL.', 'error');
+                    if(buttonElement) setButtonLoadingSalaryFMS(false, buttonElement);
+                    return;
+                }
+                const res = await fetch(`${API_ENDPOINT_URL_SALARY_FMS}?UID=${entryToUpdateLocally.UID}&action=updateEntry`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({jsonData: JSON.stringify({ UID: entryToUpdateLocally.UID, updates: dataToUpdatePayload })})
+                });
+
+                if (res.ok) {
+                    const responseData = await res.json().catch(() => ({}));
+                    showUserAlertSalaryFMS(responseData.message || `Entry ${entryToUpdateLocally.UID} (Salary: ${entryToUpdateLocally['Salary for the Month']} ${entryToUpdateLocally.Year}) updated. New status: "${newStatusDeterminedByThisStep}"`, 'success');
+
+                    Object.assign(allEntriesSalaryFMS[entryIdx], dataToUpdatePayload);
+                    allEntriesSalaryFMS[entryIdx].status = newStatusDeterminedByThisStep;
+
+                    applyFiltersAndSearchSalaryFMS();
+                    if (entryDetailsModalSalaryFMS.style.display === "flex") {
+                         const currentModalEntry = allEntriesSalaryFMS.find(e => e.UID === entryUID);
+                         if(currentModalEntry) {
+                            populateDetailsModalSalaryFMS(currentModalEntry);
+                            detailsModalSubtitleSalaryFMS.textContent = `Initiated: ${formatDateForDisplay(currentModalEntry.Timestamp)} - Status: ${currentModalEntry.status}`;
+                         }
+                    }
+                } else {
+                    const errorResult = await res.json().catch(() => ({ message: 'Unknown error during update.' }));
+                    showUserAlertSalaryFMS('Error updating status via API: ' + (errorResult.error || errorResult.message || res.statusText), 'error');
+                }
+            } catch (e) {
+                console.error('Error updating status:', e);
+                showUserAlertSalaryFMS('Network error during update: ' + e.message + '. Local changes might not be saved to backend.', 'error');
+                Object.assign(allEntriesSalaryFMS[entryIdx], dataToUpdatePayload);
+                allEntriesSalaryFMS[entryIdx].status = newStatusDeterminedByThisStep;
+                applyFiltersAndSearchSalaryFMS();
+                if (entryDetailsModalSalaryFMS.style.display === "flex") {
+                    const currentModalEntry = allEntriesSalaryFMS.find(e => e.UID === entryUID);
+                    if(currentModalEntry) populateDetailsModalSalaryFMS(currentModalEntry);
+                }
+            } finally {
+                if(buttonElement) setButtonLoadingSalaryFMS(false, buttonElement);
+            }
+        }
+
+        function populateDetailsModalSalaryFMS(entry) {
+            detailsModalContentSalaryFMS.innerHTML = '';
+
+            const modalContentSection = entryDetailsModalSalaryFMS.querySelector('.modal-content');
+            const existingControlsGroup = modalContentSection.querySelector('.modal-controls-group');
+            if (existingControlsGroup) existingControlsGroup.remove();
+
+            const controlsGroup = document.createElement('div');
+            controlsGroup.className = 'modal-controls-group';
+
+            const syncStageButton = document.createElement('button');
+            syncStageButton.className = 'modal-control-button sync-btn btn-icon-only p-1.5';
+            syncStageButton.title = 'Refresh Entry Data';
+            syncStageButton.innerHTML = `<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>`;
+            syncStageButton.onclick = () => {
+                const svgIcon = syncStageButton.querySelector('svg');
+                if (svgIcon) svgIcon.classList.add('rotate-animate');
+                setButtonLoadingSalaryFMS(true, syncStageButton);
+                fetchEntriesSalaryFMS().then(() => {
+                    const updatedEntry = allEntriesSalaryFMS.find(e => e.UID === entry.UID);
+                    if (updatedEntry) {
+                        populateDetailsModalSalaryFMS(updatedEntry);
+                        detailsModalSubtitleSalaryFMS.textContent = `Initiated: ${formatDateForDisplay(updatedEntry.Timestamp)} - Status: ${updatedEntry.status || determineSalaryStatus(updatedEntry)}`;
+                        showUserAlertSalaryFMS("Entry details refreshed!", "success");
+                    } else {
+                        closeModalSalaryFMS(entryDetailsModalSalaryFMS);
+                        showUserAlertSalaryFMS('Entry details may have changed or an error occurred during refresh.', 'info');
+                    }
+                }).catch(err => {
+                    showUserAlertSalaryFMS('Error refreshing details: ' + err.message, 'error');
+                }).finally(() => {
+                    if (svgIcon) svgIcon.classList.remove('rotate-animate');
+                    setButtonLoadingSalaryFMS(false, syncStageButton);
+                });
+            };
+            controlsGroup.appendChild(syncStageButton);
+
+
+            const newCloseButton = document.createElement('button');
+            newCloseButton.className = 'modal-control-button close-btn';
+            newCloseButton.title = 'Close';
+            newCloseButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>`;
+            newCloseButton.onclick = () => closeModalSalaryFMS(entryDetailsModalSalaryFMS);
+            controlsGroup.appendChild(newCloseButton);
+
+             if (modalContentSection) {
+                 modalContentSection.insertBefore(controlsGroup, modalContentSection.firstChild);
+            }
+
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'crm-card';
+
+            const overviewTitle = document.createElement('h2');
+            overviewTitle.textContent = 'Salary Process Overview';
+            cardDiv.appendChild(overviewTitle);
+
+            const createSectionItem = (label, value, isHtml = false) => {
+                const item = document.createElement('div'); item.className = 'crm-description-item';
+                const lbl = document.createElement('div'); lbl.className = 'crm-label'; lbl.textContent = label + ':';
+                const val = document.createElement('div'); val.className = 'crm-value';
+                if (isHtml) {
+                    val.innerHTML = value || '<span class="text-gray-400">N/A</span>';
+                } else {
+                    val.textContent = value || 'N/A';
+                }
+                item.append(lbl, val);
+                return item;
+            };
+
+            const mainDetailsSection = document.createElement('div');
+            mainDetailsSection.className = 'crm-section';
+            mainDetailsSection.style.cssText = '--section-color: #059669; --section-bg: rgba(16, 185, 129, 0.07);'; // Green theme
+            mainDetailsSection.innerHTML = `<div class="crm-section-header"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span>Process Information</span></div><div class="crm-section-content grid grid-cols-1 md:grid-cols-2 gap-x-4"></div>`;
+            const mainContent = mainDetailsSection.querySelector('.crm-section-content');
+
+            mainContent.appendChild(createSectionItem('UID', entry.UID));
+            mainContent.appendChild(createSectionItem('Salary for the Month', entry['Salary for the Month']));
+            mainContent.appendChild(createSectionItem('Year', entry.Year));
+            mainContent.appendChild(createSectionItem('Timestamp (Initiated)', formatDateForDisplay(entry.Timestamp)));
+            mainContent.appendChild(createSectionItem('Remarks', entry.Remarks));
+            mainContent.appendChild(createSectionItem('Overall Status', entry.status || determineSalaryStatus(entry)));
+
+            cardDiv.appendChild(mainDetailsSection);
+
+            const stageProcessingSection = document.createElement('div');
+            stageProcessingSection.className = 'details-section mt-6';
+            const stageProcessingTitle = document.createElement('h3');
+            stageProcessingTitle.textContent = 'Salary Stage Processing';
+            stageProcessingSection.appendChild(stageProcessingTitle);
+
+            const currentOverallStatus = entry.status || determineSalaryStatus(entry);
+            let actionButtonAddedForCurrentPendingStage = false;
+
+            SALARY_PROCESSING_STAGES.forEach((stage, index) => {
+                const stageDiv = document.createElement('div');
+                stageDiv.className = 'timeline-step';
+                let stageSpecificContent = '';
+                stageSpecificContent += createSectionItem('Step Code', entry[stage.stepCodeKey]).outerHTML;
+                stageSpecificContent += createSectionItem('Stage Status', entry[stage.statusKey]).outerHTML;
+                stageSpecificContent += createSectionItem('Stage Comments', entry[stage.commentsKey]).outerHTML;
+
+
+                stageDiv.innerHTML = `<strong>${stage.name}</strong>
+                                   <div class="timeline-details-grid mt-2">
+                                     ${createSectionItem('Planned', formatDateForDisplay(entry[stage.plannedKey])).outerHTML}
+                                     ${createSectionItem('Actual', formatDateForDisplay(entry[stage.actualKey])).outerHTML}
+                                     ${createSectionItem('Time Delay', calculateTimeDelaySalaryFMS(entry[stage.actualKey], entry[stage.plannedKey]), true).outerHTML}
+                                     ${stageSpecificContent}
+                                   </div>`;
+
+                const isStageCompleted = !!entry[stage.actualKey] && entry[stage.actualKey] !== "N/A" && String(entry[stage.actualKey]).trim() !== "";
+                let canTakeAction = !isStageCompleted;
+                if (index > 0) {
+                    const prevStage = SALARY_PROCESSING_STAGES[index - 1];
+                    if (!entry[prevStage.actualKey] || entry[prevStage.actualKey] === "N/A" || String(entry[prevStage.actualKey]).trim() === "") {
+                        canTakeAction = false;
+                    }
+                }
+                const isProcessFinal = currentOverallStatus === STATUS_MAP_SALARY_FMS.SALARY_PROCESSED;
+
+                if (canTakeAction && !actionButtonAddedForCurrentPendingStage && !isProcessFinal) {
+                     const actionButtonContainer = document.createElement('div');
+                     actionButtonContainer.className = 'action-button-group';
+                     const actionButton = document.createElement('button');
+                     actionButton.textContent = stage.buttonText;
+                     actionButton.className = 'btn btn-success btn-take-action';
+                     actionButton.onclick = () => {
+                        openStageActionModalSalaryFMS(entry, stage, index);
+                     };
+                     actionButtonContainer.appendChild(actionButton);
+                     stageDiv.appendChild(actionButtonContainer);
+                     actionButtonAddedForCurrentPendingStage = true;
+                }
+                stageProcessingSection.appendChild(stageDiv);
+            });
+
+            cardDiv.appendChild(stageProcessingSection);
+            detailsModalContentSalaryFMS.appendChild(cardDiv);
+        }
+
+
+        async function fetchEntriesSalaryFMS() {
+            tableStatusSalaryFMS.textContent = 'Loading entries...';
+            tableStatusSalaryFMS.classList.remove('hidden');
+            entriesTableBodySalaryFMS.innerHTML = '';
+            paginationControlsSalaryFMS.innerHTML = '';
+            const entranceOverlay = document.getElementById('entranceAnimationOverlaySalary');
+
+            if (API_ENDPOINT_URL_SALARY_FMS.includes('macros/library/d')) {
+                console.warn("API_ENDPOINT_URL_SALARY_FMS is a library URL. Using local demo data. Please deploy your Apps Script as a web app and use the /exec URL.");
+                showUserAlertSalaryFMS('Warning: API URL seems to be a library URL. Using demo data. Functionality might be limited. Please check console (F12) for details and update the API_ENDPOINT_URL_SALARY_FMS in the script with your deployed /exec URL.', 'warning');
+                 if (allEntriesSalaryFMS.length === 0) { // Only populate demo data if allEntries is empty
+                    const now = new Date();
+                    const baseTime = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
+                    allEntriesSalaryFMS = [
+                        {
+                            "Timestamp": "21-Apr-2025 11:42:42 AM", "Salary for the Month": "Mar", "Year": 2025, "Remarks": "Initial entry", "UID": "SF1",
+                            "Step Code 1": "SF1_S1", "Take Action (Take Approvals from MD)": "", "Take Approvals from MD Planned": "22-Apr-2025 11:42:42 AM", "Take Approvals from MD Actual": null, "Take Approvals from MD Status": null, "Take Approvals from MD Comments": null, "Take Approvals from MD Time Delay": null,
+                            "Step Code 2": "SF1_S2", "Take Action (Salary Sheet given to Accounts)": "", "Salary Sheet given to Accounts Planned": null, "Salary Sheet given to Accounts Actual": null, "Salary Sheet given to Accounts Status": null, "Salary Sheet given to Accounts Comments": null, "Salary Sheet given to Accounts Time Delay": null,
+                            "Step Code 3": "SF1_S3", "Take Action (Salary Proceed)": "", "Salary Proceed Planned": null, "Salary Proceed Actual": null, "Salary Proceed Status": null, "Salary Proceed Comments": null, "Salary Proceed Time Delay": null
+                        },
+                        {
+                            "Timestamp": "20-May-2025 09:00:00 AM", "Salary for the Month": "Apr", "Year": 2025, "Remarks": "April salaries", "UID": "SF2",
+                            "Step Code 1": "SF2_S1", "Take Action (Take Approvals from MD)": "", "Take Approvals from MD Planned": "21-May-2025 09:00:00 AM", "Take Approvals from MD Actual": "22-May-2025 10:00:00 AM", "Take Approvals from MD Status": "Approved", "Take Approvals from MD Comments": "All good", "Take Approvals from MD Time Delay": "0 day(s) late",
+                            "Step Code 2": "SF2_S2", "Take Action (Salary Sheet given to Accounts)": "Provide by EOD", "Salary Sheet given to Accounts Planned": "23-May-2025 10:00:00 AM", "Salary Sheet given to Accounts Actual": null, "Salary Sheet given to Accounts Status": null, "Salary Sheet given to Accounts Comments": null, "Salary Sheet given to Accounts Time Delay": null,
+                            "Step Code 3": "SF2_S3", "Take Action (Salary Proceed)": "", "Salary Proceed Planned": null, "Salary Proceed Actual": null, "Salary Proceed Status": null, "Salary Proceed Comments": null, "Salary Proceed Time Delay": null
+                        }
+                    ];
+                }
+            } else { // Actual fetch
+                try {
+                    const res = await fetch(`${API_ENDPOINT_URL_SALARY_FMS}?action=getEntries&cachebust=${new Date().getTime()}`);
+                    if (!res.ok) {
+                        const errorText = await res.text();
+                        throw new Error(`Failed to fetch: ${res.status} ${res.statusText} - ${errorText}`);
+                    }
+                    const result = await res.json();
+
+                    let dataToProcess = [];
+                    if (result && result.success && Array.isArray(result.data)) {
+                        dataToProcess = result.data;
+                    } else if (Array.isArray(result)) {
+                        console.warn("Apps Script returned a direct array. Expected {success: true, data: [...]}. Adapting...");
+                        dataToProcess = result;
+                    } else {
+                        tableStatusSalaryFMS.textContent = 'Error fetching entries: '+(result.message ||'Invalid data format received.');
+                        showUserAlertSalaryFMS('Error fetching entries: '+(result.message ||'Invalid data format received.'),'error');
+                        if(entranceOverlay) entranceOverlay.classList.add('hidden');
+                        return;
+                    }
+                    allEntriesSalaryFMS = dataToProcess;
+                } catch (e) {
+                    console.error('Error fetching entries:', e);
+                    tableStatusSalaryFMS.textContent = 'Failed to load entries. Check console, API URL, and script permissions.';
+                    showUserAlertSalaryFMS('Network error while fetching entries: '+e.message,'error');
+                    if(entranceOverlay) entranceAnimationOverlaySalary.classList.add('hidden');
+                    return;
+                }
+            }
+
+            allEntriesSalaryFMS.forEach(entry => entry.status = determineSalaryStatus(entry));
+            allEntriesSalaryFMS.sort((a, b) => {
+                const dateA = parseFlexibleDateSalaryFMS(a.Timestamp);
+                const dateB = parseFlexibleDateSalaryFMS(b.Timestamp);
+                if (!dateA && !dateB) return 0;
+                if (!dateA) return 1;
+                if (!dateB) return -1;
+                return dateB - dateA;
+            });
+
+            currentlyDisplayedEntriesSalaryFMS = [...allEntriesSalaryFMS];
+            applyFiltersAndSearchSalaryFMS();
+            tableStatusSalaryFMS.classList.toggle('hidden', allEntriesSalaryFMS.length > 0);
+
+            if (allEntriesSalaryFMS.length === 0 && !API_ENDPOINT_URL_SALARY_FMS.includes('macros/library/d')) tableStatusSalaryFMS.textContent = 'No entries found.';
+            else if (allEntriesSalaryFMS.length === 0) tableStatusSalaryFMS.textContent = 'No entries (demo).';
+
+
+            if(entranceOverlay) entranceAnimationOverlaySalary.classList.add('hidden');
+        }
+
+        function populateFilterDropdownsSalaryFMS() {
+            statusFilterSalaryFMS.innerHTML = '<option value="">All Statuses</option>';
+            Object.values(STATUS_MAP_SALARY_FMS).forEach(statusVal => {
+                if (statusVal) {
+                    const option = document.createElement('option');
+                    option.value = statusVal;
+                    option.textContent = statusVal;
+                    statusFilterSalaryFMS.appendChild(option);
+                }
+            });
+        }
+
+
+        function applyFiltersAndSearchSalaryFMS() {
+            let filtered = [...allEntriesSalaryFMS];
+            const searchTerm = searchInputSalaryFMS.value.toLowerCase().trim();
+            const selectedStatus = statusFilterSalaryFMS.value;
+            const selectedMonthYear = monthYearFilterSalaryFMS.value; // YYYY-MM
+            const selectedActionStatus = actionStatusFilterSalaryFMS.value;
+
+
+            if (searchTerm || selectedStatus || selectedMonthYear || selectedActionStatus) {
+                filtered = filtered.filter(entry => {
+                    const searchMatch = !searchTerm || (
+                        String(entry.UID).toLowerCase().includes(searchTerm) ||
+                        String(entry['Salary for the Month']).toLowerCase().includes(searchTerm) ||
+                        String(entry.Year).toLowerCase().includes(searchTerm) ||
+                        String(entry.Remarks).toLowerCase().includes(searchTerm)
+                    );
+
+                    const statusMatch = !selectedStatus || (entry.status || determineSalaryStatus(entry)) === selectedStatus;
+
+                    let monthYearMatch = true;
+                    if (selectedMonthYear) {
+                        const [filterYear, filterMonth] = selectedMonthYear.split('-'); // "YYYY-MM"
+                        const entryMonthStr = entry['Salary for the Month'];
+                        const entryYearStr = String(entry.Year);
+
+                        const monthMap = { "jan": "01", "feb": "02", "mar": "03", "apr": "04", "may": "05", "jun": "06", "jul": "07", "aug": "08", "sep": "09", "oct": "10", "nov": "11", "dec": "12" };
+                        const entryMonthNum = monthMap[entryMonthStr?.toLowerCase()];
+
+                        if (entryYearStr === filterYear && entryMonthNum === filterMonth) {
+                            monthYearMatch = true;
+                        } else {
+                            monthYearMatch = false;
+                        }
+                    }
+
+
+                    let actionStatusMatch = true;
+                    if (selectedActionStatus) {
+                        const plannedActionInfo = getNextPlannedActionTimestampSalaryFMS(entry);
+                        if (plannedActionInfo.date) {
+                            const today = new Date(); today.setHours(0,0,0,0);
+                            const sevenDaysFromNow = new Date(today); sevenDaysFromNow.setDate(today.getDate() + 7);
+
+                            if (selectedActionStatus === 'overdue') {
+                                actionStatusMatch = plannedActionInfo.isOverdue;
+                            } else if (selectedActionStatus === 'upcoming') {
+                                actionStatusMatch = plannedActionInfo.date >= today && plannedActionInfo.date <= sevenDaysFromNow && !plannedActionInfo.isOverdue;
+                            }
+                        } else {
+                            actionStatusMatch = false;
+                        }
+                    }
+                    return searchMatch && statusMatch && monthYearMatch && actionStatusMatch;
+                });
+            }
+            currentlyDisplayedEntriesSalaryFMS = filtered;
+            currentPageSalaryFMS = 1;
+            renderTableSalaryFMS(currentlyDisplayedEntriesSalaryFMS);
+        }
+
+
+        function renderTableSalaryFMS(entriesToRender) {
+            entriesTableBodySalaryFMS.innerHTML = '';
+            paginationControlsSalaryFMS.innerHTML = '';
+            renderScorecardsSalaryFMS(allEntriesSalaryFMS);
+
+            tableStatusSalaryFMS.classList.toggle('hidden', entriesToRender.length > 0);
+            if (entriesToRender.length === 0) {
+                 if (allEntriesSalaryFMS.length > 0 && (searchInputSalaryFMS.value || statusFilterSalaryFMS.value || monthYearFilterSalaryFMS.value || actionStatusFilterSalaryFMS.value)) {
+                    tableStatusSalaryFMS.textContent = 'No entries match your filters.';
+                } else if (allEntriesSalaryFMS.length === 0 && !API_ENDPOINT_URL_SALARY_FMS.includes('macros/library/d')) {
+                    tableStatusSalaryFMS.textContent = 'No entries found from the source.';
+                } else if (allEntriesSalaryFMS.length === 0) {
+                     tableStatusSalaryFMS.textContent = 'No entries available (or in demo mode).';
+                }
+            }
+
+
+            const paginatedEntries = entriesToRender.slice((currentPageSalaryFMS-1)*ITEMS_PER_PAGE_SALARY_FMS, (currentPageSalaryFMS-1)*ITEMS_PER_PAGE_SALARY_FMS + ITEMS_PER_PAGE_SALARY_FMS);
+
+            paginatedEntries.forEach((entry, idx) => {
+                const row = entriesTableBodySalaryFMS.insertRow();
+                row.className = idx % 2 === 0 ? 'bg-white' : 'bg-gray-50 hover:bg-gray-100 transition-colors duration-150';
+
+                tableHeadersConfigSalaryFMS.forEach(hConfig => {
+                    if (hConfig.key === 'actions') return;
+
+                    const cell = row.insertCell();
+                    let cellValue;
+                    let cellHtml = '';
+                    let isOverdue = false;
+
+
+                    if (hConfig.customRender) {
+                        const renderResult = hConfig.customRender(entry);
+                        cellValue = renderResult.text || 'N/A';
+                        isOverdue = renderResult.isOverdue || false;
+                    } else if (hConfig.key === 'status') {
+                        cellValue = entry.status || determineSalaryStatus(entry);
+                    } else {
+                        cellValue = entry[hConfig.key];
+                        cellValue = (hConfig.isDate && cellValue) ? formatDateForDisplay(cellValue) : (cellValue || 'N/A');
+                    }
+
+                    if (hConfig.key === 'status') {
+                        let statusClass = 'status-default';
+                        if (STATUS_MAP_SALARY_FMS.PENDING_MD_APPROVAL === cellValue) statusClass = 'status-pending-md-approval';
+                        else if (STATUS_MAP_SALARY_FMS.PENDING_ACCOUNTS_SHEET === cellValue) statusClass = 'status-pending-accounts-sheet';
+                        else if (STATUS_MAP_SALARY_FMS.PENDING_SALARY_PROCEED === cellValue) statusClass = 'status-pending-salary-proceed';
+                        else if (STATUS_MAP_SALARY_FMS.SALARY_PROCESSED === cellValue) statusClass = 'status-salary-processed';
+                        cellHtml = `<span class="status-badge ${statusClass}">${cellValue}</span>`;
+                    } else if (isOverdue) {
+                        cellHtml = `<span class="overdue-task">${cellValue}</span>`;
+                    }
+                    else {
+                        cellHtml = cellValue;
+                    }
+                    cell.innerHTML = cellHtml;
+                    cell.setAttribute('data-label',hConfig.label);
+                    cell.className='px-3 py-2 text-xs text-gray-700';
+                });
+
+                const actionsCell = row.insertCell();
+                actionsCell.setAttribute('data-label','Actions');
+                actionsCell.className='px-3 py-2 whitespace-nowrap text-xs text-gray-700 text-right md:text-left flex items-center justify-end md:justify-start space-x-1';
+
+                const viewButton = document.createElement('button');
+                viewButton.className = 'btn btn-info btn-xs p-1.5 btn-icon-only';
+                viewButton.title = 'View Details';
+                viewButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                    </svg>`;
+                viewButton.onclick = () => openEntryDetailsModalSalaryFMS(entry.UID);
+                actionsCell.appendChild(viewButton);
+            });
+            renderPaginationControlsSalaryFMS(entriesToRender.length);
+        }
+
+        function getNextPlannedActionTimestampSalaryFMS(entry) {
+            const currentStatus = entry.status || determineSalaryStatus(entry);
+            let plannedTimestampStr = 'N/A';
+            let isOverdue = false;
+            const now = new Date(); now.setHours(0,0,0,0);
+            let relevantPlannedKey = '';
+            let dateObject = null;
+
+            for (const stage of SALARY_PROCESSING_STAGES) {
+                if (!entry[stage.actualKey] || entry[stage.actualKey] === "N/A" || String(entry[stage.actualKey]).trim() === "") {
+                    relevantPlannedKey = stage.plannedKey;
+                    break;
+                }
+            }
+
+            if (!relevantPlannedKey || currentStatus === STATUS_MAP_SALARY_FMS.SALARY_PROCESSED) {
+                return { text: 'N/A', isOverdue: false, date: null };
+            }
+
+            if (entry[relevantPlannedKey] && String(entry[relevantPlannedKey]).trim() !== "" && entry[relevantPlannedKey] !== "N/A" && entry[relevantPlannedKey] !== "SKIPPED") {
+                const plannedDate = parseFlexibleDateSalaryFMS(entry[relevantPlannedKey]);
+                if (plannedDate && !isNaN(plannedDate.getTime())) {
+                    dateObject = plannedDate;
+                    plannedTimestampStr = formatDateForDisplay(plannedDate);
+                    const plannedDateOnly = new Date(plannedDate); plannedDateOnly.setHours(0,0,0,0);
+                    if (plannedDateOnly < now) {
+                        isOverdue = true;
+                    }
+                } else {
+                    plannedTimestampStr = String(entry[relevantPlannedKey]);
+                }
+            }
+            return { text: plannedTimestampStr, isOverdue: isOverdue, date: dateObject };
+        }
+
+
+        function renderPaginationControlsSalaryFMS(totalItemsInCurrentView) {
+            paginationControlsSalaryFMS.innerHTML='';
+            const totalPages = Math.ceil(totalItemsInCurrentView / ITEMS_PER_PAGE_SALARY_FMS);
+            if(totalPages <= 1) return;
+
+            const createButton = (text, pageNum, isDisabled = false) => {
+                const btn = document.createElement('button');
+                btn.textContent = text;
+                btn.className = `btn btn-secondary text-sm px-2 py-1 sm:px-3 sm:py-1.5 ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-300'}`;
+                btn.disabled = isDisabled;
+                btn.onclick = () => {
+                    currentPageSalaryFMS = pageNum;
+                    renderTableSalaryFMS(currentlyDisplayedEntriesSalaryFMS);
+                };
+                return btn;
+            };
+
+            paginationControlsSalaryFMS.appendChild(createButton('Previous', currentPageSalaryFMS - 1, currentPageSalaryFMS === 1));
+
+            const maxPagesToShow = 5;
+            let startPage, endPage;
+            if (totalPages <= maxPagesToShow) {
+                startPage = 1;
+                endPage = totalPages;
+            } else {
+                const maxPagesBeforeCurrent = Math.floor(maxPagesToShow / 2);
+                const maxPagesAfterCurrent = Math.ceil(maxPagesToShow / 2) - 1;
+                if (currentPageSalaryFMS <= maxPagesBeforeCurrent) {
+                    startPage = 1;
+                    endPage = maxPagesToShow;
+                } else if (currentPageSalaryFMS + maxPagesAfterCurrent >= totalPages) {
+                    startPage = totalPages - maxPagesToShow + 1;
+                    endPage = totalPages;
+                } else {
+                    startPage = currentPageSalaryFMS - maxPagesBeforeCurrent;
+                    endPage = currentPageSalaryFMS + maxPagesAfterCurrent;
+                }
+            }
+
+            if (startPage > 1) {
+                paginationControlsSalaryFMS.appendChild(createButton('1', 1));
+                if (startPage > 2) {
+                    const dots = document.createElement('span');
+                    dots.textContent = '...';
+                    dots.className = 'px-2 py-1 text-sm text-gray-500';
+                    paginationControlsSalaryFMS.appendChild(dots);
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = createButton(i, i, i === currentPageSalaryFMS);
+                if (i === currentPageSalaryFMS) {
+                    pageButton.classList.remove('btn-secondary', 'hover:bg-gray-300');
+                    pageButton.classList.add('btn-primary', 'cursor-default');
+                }
+                paginationControlsSalaryFMS.appendChild(pageButton);
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                     const dots = document.createElement('span');
+                    dots.textContent = '...';
+                    dots.className = 'px-2 py-1 text-sm text-gray-500';
+                    paginationControlsSalaryFMS.appendChild(dots);
+                }
+                paginationControlsSalaryFMS.appendChild(createButton(totalPages, totalPages));
+            }
+
+            paginationControlsSalaryFMS.appendChild(createButton('Next', currentPageSalaryFMS + 1, currentPageSalaryFMS === totalPages));
+
+            const pageInfo = document.createElement('span');
+            pageInfo.textContent = `Page ${currentPageSalaryFMS} of ${totalPages}`;
+            pageInfo.className = 'px-2 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hidden sm:inline';
+            if (paginationControlsSalaryFMS.children.length > 2) {
+                 paginationControlsSalaryFMS.insertBefore(pageInfo, paginationControlsSalaryFMS.children[Math.floor(paginationControlsSalaryFMS.children.length/2)]);
+            } else {
+                paginationControlsSalaryFMS.appendChild(pageInfo);
+            }
+        }
+
+
+        function updateDateTimeSalaryFMS() {
+            const dateTimeDisplay = document.getElementById('dateTimeDisplaySalaryFMS');
+            if (dateTimeDisplay) {
+                const now = new Date();
+                const options = {
+                    weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit', hour12: true
+                };
+                dateTimeDisplay.textContent = now.toLocaleString('en-US', options);
+            }
+        }
+
+  // Highlight active navigation link
+  const currentPath = window.location.pathname.split("/").pop(); // e.g., "Billing.html"
+  const navLinks = document.querySelectorAll("#mainNav .nav-link");
+
+  navLinks.forEach(link => {
+    if (link.getAttribute("href") === currentPath) {
+      link.classList.add("text-indigo-600", "font-semibold");
+    } else {
+      link.classList.remove("text-indigo-600", "font-semibold");
+    }
+  });
+
+
+function updateDateTime() {
+        const dateTimeDisplay = document.getElementById('dateTimeDisplay');
+        if (dateTimeDisplay) {
+            const now = new Date();
+            const options = {
+                weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', hour12: true
+            };
+            dateTimeDisplay.textContent = now.toLocaleString('en-US', options);
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+    });       
+
+    </script>
+</body>
+</html>
